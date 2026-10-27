@@ -2,24 +2,38 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Enums\BookingMode;
+use App\Models\OpeningHour;
+use App\Models\Space;
 use Illuminate\Database\Seeder;
 
+/**
+ * Placeholder venue setup until Deal confirms its spaces and hours (PLAN.md §11).
+ * Safe to re-run: existing rows are updated, not duplicated. Admin users are created
+ * with `php artisan make:filament-user`.
+ */
 class DatabaseSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
     /**
      * Seed the application's database.
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        // Venue-wide hours: Mon–Fri 08:00–19:00, Sat 09:00–13:00.
+        foreach ([1, 2, 3, 4, 5] as $weekday) {
+            OpeningHour::updateOrCreate(['space_id' => null, 'weekday' => $weekday], ['opens_at' => '08:00', 'closes_at' => '19:00']);
+        }
+        OpeningHour::updateOrCreate(['space_id' => null, 'weekday' => 6], ['opens_at' => '09:00', 'closes_at' => '13:00']);
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        $spaces = [
+            ['slug' => 'sala-de-reuniones', 'name' => 'Sala de reuniones', 'type_label' => 'Sala', 'capacity' => 8, 'booking_mode' => BookingMode::Hourly, 'requires_approval' => true, 'price_label' => '$10 / hora', 'sort' => 1],
+            ['slug' => 'cabina-privada', 'name' => 'Cabina privada', 'type_label' => 'Cabina', 'capacity' => 1, 'booking_mode' => BookingMode::Hourly, 'requires_approval' => false, 'price_label' => '$4 / hora', 'sort' => 2],
+            ['slug' => 'oficina-privada', 'name' => 'Oficina privada', 'type_label' => 'Oficina', 'capacity' => 4, 'booking_mode' => BookingMode::Daily, 'requires_approval' => true, 'price_label' => '$35 / día', 'sort' => 3],
+            ['slug' => 'puesto-flexible', 'name' => 'Puesto flexible', 'type_label' => 'Coworking', 'capacity' => 20, 'booking_mode' => BookingMode::Capacity, 'requires_approval' => false, 'price_label' => '$12 / día', 'sort' => 4],
+        ];
+
+        foreach ($spaces as $space) {
+            Space::updateOrCreate(['slug' => $space['slug']], $space);
+        }
     }
 }

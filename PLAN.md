@@ -213,7 +213,7 @@ spaces              id, name, slug, type_label, description, capacity, booking_m
                     lead_time_minutes, horizon_days, price_label, is_bookable, is_active, sort, seo_*
 amenities           id, name, icon        ↔  amenity_space (pivot)
 opening_hours       id, space_id NULL(=global), weekday, opens_at, closes_at
-closures            id, space_id NULL(=all), starts_at, ends_at, reason      ← holidays + admin blocks
+blocked_periods     id, space_id NULL(=all), starts_at, ends_at, reason      ← holidays + admin blocks
 customers           id, name, email, phone_e164, company, whatsapp_opt_in, no_show_count, timestamps
 bookings            id, code, space_id, customer_id, starts_at, ends_at, attendees, notes,
                     status, status_reason, source(web|admin|api), manage_token,

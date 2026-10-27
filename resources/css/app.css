@@ -1,0 +1,63 @@
+/* Deal — main stylesheet */
+
+:root {
+  --primary: #1a1a1a;   /* brand color: buttons, links, accents */
+  --accent: #f2b705;    /* highlights, badges */
+  --text: #222222;
+  --muted: #6b6b6b;     /* secondary text, borders */
+  --bg: #ffffff;
+
+  --radius: 10px;
+
+  --font-body: "Inter", system-ui, sans-serif;
+  --font-heading: "Inter", system-ui, sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  line-height: 1.6;
+  color: var(--text);
+  background: var(--bg);
+}
+
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; margin: 0 0 .5em; }
+
+a { color: var(--primary); }
+
+img { max-width: 100%; display: block; border-radius: var(--radius); }
+
+.container { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
+
+button, .btn {
+  display: inline-block;
+  padding: .75em 1.5em;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--primary);
+  color: var(--bg);
+  font: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: .7em .9em;
+  border: 1px solid var(--muted);
+  border-radius: var(--radius);
+  font: inherit;
+  color: var(--text);
+  background: var(--bg);
+}
+
+/* --- Sections and components below --- */
+
+.site-header, .site-footer { padding: 24px 0; }
+.site-header .container { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.site-header nav { display: flex; flex-wrap: wrap; gap: 16px; }
+.site-header nav a { text-decoration: none; color: var(--text); }
+.site-footer { color: var(--muted); border-top: 1px solid var(--muted); }
+.logo { font-family: var(--font-heading); font-weight: 600; font-size: 1.4rem; text-decoration: none; color: var(--primary); }

@@ -78,6 +78,15 @@ class Booking extends Model
         return $query->whereIn('status', BookingStatus::holdingSlot());
     }
 
+    /**
+     * Customers can cancel online until the space's cancellation window closes.
+     */
+    public function canBeCancelledByCustomer(): bool
+    {
+        return in_array($this->status, BookingStatus::holdingSlot(), true)
+            && now()->addHours($this->space->cancellation_hours) <= $this->starts_at;
+    }
+
     public static function generateCode(): string
     {
         do {

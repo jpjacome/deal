@@ -4,6 +4,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ isset($title) ? $title.' · ' : '' }}{{ config('app.name') }}</title>
+    @if ($noindex ?? false)
+        <meta name="robots" content="noindex, nofollow">
+    @endif
     @fonts
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -12,11 +15,11 @@
         <div class="container">
             <a href="{{ route('home') }}" class="logo">{{ config('app.name') }}</a>
             <nav>
-                <a href="#">Espacios</a>
+                <a href="{{ route('home') }}#espacios">Espacios</a>
                 <a href="#">Planes</a>
                 <a href="#">Galería</a>
                 <a href="#">Contacto</a>
-                <a href="#" class="btn">Reservar</a>
+                <a href="{{ route('bookings.create') }}" class="btn">Reservar</a>
             </nav>
         </div>
     </header>

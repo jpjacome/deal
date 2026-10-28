@@ -5,6 +5,7 @@ namespace App\Filament\Pages;
 use App\Models\Setting;
 use App\Support\PhoneNumber;
 use BackedEnum;
+use Closure;
 use Filament\Actions\Action;
 use Filament\Forms\Components\MarkdownEditor;
 use Filament\Forms\Components\TagsInput;
@@ -69,8 +70,13 @@ class Settings extends Page
                                 TextInput::make('whatsapp_number')
                                     ->label('WhatsApp de Deal')
                                     ->tel()
-                                    ->placeholder('099 123 4567')
-                                    ->helperText('Para los botones "Escríbenos por WhatsApp".')
+                                    ->placeholder('+593 99 123 4567')
+                                    ->helperText('Número completo con código de país, p. ej. +593 99 123 4567. Se usa en los botones "Escríbenos por WhatsApp".')
+                                    ->rule(fn (): Closure => function (string $attribute, mixed $value, Closure $fail): void {
+                                        if (filled($value) && PhoneNumber::normalize($value) === null) {
+                                            $fail('Número no válido. Escríbelo con código de país, p. ej. +593 99 123 4567.');
+                                        }
+                                    })
                                     ->dehydrateStateUsing(fn (?string $state) => PhoneNumber::normalize($state) ?? $state),
                                 Textarea::make('arrival_info')
                                     ->label('Información de llegada')

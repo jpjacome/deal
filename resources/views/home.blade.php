@@ -1,7 +1,8 @@
 @extends('layouts.app')
 
 @section('content')
-    <section class="container section">
+    <section class="hero gradient">
+        <p class="eyebrow">Meet Hub</p>
         <h1>Tu espacio de trabajo en Cuenca</h1>
         <p>Contenido provisional. El diseño final se aplica en la fase de diseño.</p>
         <a href="{{ route('bookings.create') }}" class="btn">Reservar un espacio</a>

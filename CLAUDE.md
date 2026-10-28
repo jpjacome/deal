@@ -4,6 +4,7 @@ Spec: see `PLAN.md` (scope, data model, booking rules, notifications, delivery p
 
 - Public site in **Spanish**; app timezone `America/Guayaquil`.
 - **No Tailwind or CSS frameworks.** One stylesheet: `resources/css/app.css` — 5 color vars, one `--radius`, two font vars, base element styles. Write plain CSS using those variables.
+- Brand (from `DEAL HUB.pdf`, not a brand book yet): orange→red→maroon gradient, cream `#f5eace`, rounded cards, speech-bubble motif. Wordmark: `public/images/deal-logo.svg` (uses `currentColor`; render inline with `<x-logo />`). Deck font is SF Pro Display; the web uses Inter as stand-in.
 - Admin panel + CMS: Filament v5 at `/admin`. Public interactive parts: Livewire 4 + Blade.
 - Two environments: **local** (Herd at `http://deal.test`, SQLite) and **production** (shared host, MySQL). Keep everything env-driven (`.env`), migrations portable between SQLite and MySQL, no hard-coded URLs/paths. Production runs queues/scheduler via cron (`schedule:run` every minute).
 - Composer on Windows: `^` gets eaten by the `.bat` wrapper — use `~x.y` constraints.

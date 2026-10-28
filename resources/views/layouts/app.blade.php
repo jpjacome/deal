@@ -7,13 +7,15 @@
     @if ($noindex ?? false)
         <meta name="robots" content="noindex, nofollow">
     @endif
+    <meta name="theme-color" content="#9b1c19">
+    <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
     @fonts
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body>
     <header class="site-header">
         <div class="container">
-            <a href="{{ route('home') }}" class="logo">{{ config('app.name') }}</a>
+            <a href="{{ route('home') }}" class="logo" aria-label="{{ config('app.name') }} — inicio"><x-logo /></a>
             <nav>
                 <a href="{{ route('home') }}#espacios">Espacios</a>
                 <a href="#">Planes</a>
@@ -28,9 +30,10 @@
         @yield('content')
     </main>
 
-    <footer class="site-footer">
+    <footer class="site-footer gradient">
         <div class="container">
-            &copy; {{ date('Y') }} {{ config('app.name') }} · Cuenca, Ecuador
+            <a href="{{ route('home') }}" class="logo" aria-label="{{ config('app.name') }}"><x-logo /></a>
+            <span>&copy; {{ date('Y') }} {{ config('app.name') }} · Cuenca, Ecuador</span>
         </div>
     </footer>
 </body>

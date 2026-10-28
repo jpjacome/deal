@@ -26,10 +26,10 @@ class DatabaseSeeder extends Seeder
         OpeningHour::updateOrCreate(['space_id' => null, 'weekday' => 6], ['opens_at' => '09:00', 'closes_at' => '13:00']);
 
         $spaces = [
-            ['slug' => 'sala-de-reuniones', 'name' => 'Sala de reuniones', 'type_label' => 'Sala', 'capacity' => 8, 'booking_mode' => BookingMode::Hourly, 'requires_approval' => true, 'price_label' => '$10 / hora', 'sort' => 1],
-            ['slug' => 'cabina-privada', 'name' => 'Cabina privada', 'type_label' => 'Cabina', 'capacity' => 1, 'booking_mode' => BookingMode::Hourly, 'requires_approval' => false, 'price_label' => '$4 / hora', 'sort' => 2],
-            ['slug' => 'oficina-privada', 'name' => 'Oficina privada', 'type_label' => 'Oficina', 'capacity' => 4, 'booking_mode' => BookingMode::Daily, 'requires_approval' => true, 'price_label' => '$35 / día', 'sort' => 3],
-            ['slug' => 'puesto-flexible', 'name' => 'Puesto flexible', 'type_label' => 'Coworking', 'capacity' => 20, 'booking_mode' => BookingMode::Capacity, 'requires_approval' => false, 'price_label' => '$12 / día', 'sort' => 4],
+            ['slug' => 'sala-de-reuniones', 'name' => 'Sala de reuniones', 'type_label' => 'Sala', 'capacity' => 8, 'booking_mode' => BookingMode::Hourly, 'requires_approval' => true, 'price' => 10, 'amenities' => ['Pantalla', 'Pizarra', 'Videollamadas', 'Café'], 'sort' => 1],
+            ['slug' => 'cabina-privada', 'name' => 'Cabina privada', 'type_label' => 'Cabina', 'capacity' => 1, 'booking_mode' => BookingMode::Hourly, 'requires_approval' => false, 'price' => 4, 'amenities' => ['Insonorizada', 'Videollamadas'], 'sort' => 2],
+            ['slug' => 'oficina-privada', 'name' => 'Oficina privada', 'type_label' => 'Oficina', 'capacity' => 4, 'booking_mode' => BookingMode::Daily, 'requires_approval' => true, 'price' => 35, 'allows_half_day' => true, 'half_day_price' => 20, 'amenities' => ['Luz natural', 'Llave propia', 'Wifi'], 'sort' => 3],
+            ['slug' => 'puesto-flexible', 'name' => 'Puesto flexible', 'type_label' => 'Coworking', 'capacity' => 20, 'booking_mode' => BookingMode::Capacity, 'requires_approval' => false, 'price' => 12, 'allows_half_day' => true, 'half_day_price' => 7, 'amenities' => ['Wifi', 'Café', 'Locker'], 'sort' => 4],
         ];
 
         foreach ($spaces as $space) {

@@ -29,6 +29,11 @@ class CustomersTable
                     ->label('Celular')
                     ->searchable()
                     ->placeholder('—'),
+                TextColumn::make('tags')
+                    ->label('Etiquetas')
+                    ->badge()
+                    ->color('gray')
+                    ->placeholder('—'),
                 IconColumn::make('whatsapp_opt_in')
                     ->label('WhatsApp')
                     ->boolean(),

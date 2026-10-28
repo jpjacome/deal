@@ -2,7 +2,10 @@
 
 namespace App\Filament\Resources\Spaces\Tables;
 
+use App\Models\Space;
+use Filament\Actions\Action;
 use Filament\Actions\EditAction;
+use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
@@ -27,8 +30,10 @@ class SpacesTable
                 TextColumn::make('capacity')
                     ->label('Capacidad')
                     ->alignCenter(),
-                TextColumn::make('price_label')
+                TextColumn::make('price')
                     ->label('Precio')
+                    ->money('USD')
+                    ->description(fn (Space $record): string => $record->priceUnitLabel())
                     ->placeholder('—'),
                 IconColumn::make('requires_approval')
                     ->label('Requiere confirmación')
@@ -40,6 +45,13 @@ class SpacesTable
             ])
             ->recordActions([
                 EditAction::make(),
+                Action::make('doorSign')
+                    ->label('Letrero QR')
+                    ->icon(Heroicon::OutlinedQrCode)
+                    ->color('gray')
+                    ->tooltip('Para imprimir y pegar en la puerta: escanean y reservan este espacio.')
+                    ->visible(fn (Space $record): bool => $record->is_active && $record->is_bookable)
+                    ->url(fn (Space $record): string => route('spaces.door-sign', $record), shouldOpenInNewTab: true),
             ]);
     }
 }

@@ -5,17 +5,21 @@ namespace App\Filament\Pages;
 use App\Models\Setting;
 use App\Support\PhoneNumber;
 use BackedEnum;
+use Filament\Actions\Action;
 use Filament\Forms\Components\MarkdownEditor;
 use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Components\Text;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Support\Str;
 use UnitEnum;
 
 /**
@@ -119,6 +123,26 @@ class Settings extends Page
                                     ->label('Mensaje de plan mensual')
                                     ->placeholder('Con el plan mensual tienes tu lugar asegurado todos los días por $X…')
                                     ->rows(3),
+                            ]),
+                    ]),
+                    Tab::make('Pantalla')->icon(Heroicon::OutlinedTv)->schema([
+                        Section::make('Pantalla de recepción')
+                            ->description('Una página para un TV o tablet en recepción: la agenda de hoy por espacio y cuáles están libres ahora. Se actualiza sola cada minuto. El enlace es privado.')
+                            ->schema([
+                                Text::make(fn (): string => filled(Setting::get('screen_token'))
+                                    ? route('screen', Setting::get('screen_token'))
+                                    : 'Todavía no está activada.')
+                                    ->copyable(fn (): bool => filled(Setting::get('screen_token'))),
+                                Actions::make([
+                                    Action::make('screenToken')
+                                        ->label(fn (): string => filled(Setting::get('screen_token')) ? 'Generar un enlace nuevo' : 'Activar pantalla')
+                                        ->requiresConfirmation(fn (): bool => filled(Setting::get('screen_token')))
+                                        ->modalDescription('El enlace anterior dejará de funcionar.')
+                                        ->action(function (): void {
+                                            Setting::put(['screen_token' => Str::random(40)]);
+                                            Notification::make()->success()->title('Enlace de pantalla listo')->send();
+                                        }),
+                                ]),
                             ]),
                     ]),
                     Tab::make('Legal')->icon(Heroicon::OutlinedShieldCheck)->schema([

@@ -2,6 +2,9 @@
 
 namespace App\Filament\Resources\Customers\Schemas;
 
+use App\Models\Setting;
+use Filament\Forms\Components\TagsInput;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
@@ -23,7 +26,6 @@ class CustomerForm
                         TextInput::make('email')
                             ->label('Correo')
                             ->email()
-                            ->required()
                             ->unique(ignoreRecord: true),
                         TextInput::make('phone')
                             ->label('Celular')
@@ -38,7 +40,17 @@ class CustomerForm
                         TextInput::make('no_show_count')
                             ->label('Inasistencias')
                             ->numeric()
-                            ->minValue(0),
+                            ->minValue(0)
+                            ->helperText(fn (): string => 'Con '.Setting::get('no_show_threshold').' o más, sus reservas en línea quedan pendientes.'),
+                        TagsInput::make('tags')
+                            ->label('Etiquetas')
+                            ->placeholder('VIP, empresa, frecuente…')
+                            ->columnSpanFull(),
+                        Textarea::make('notes')
+                            ->label('Notas internas')
+                            ->helperText('Solo las ve el equipo.')
+                            ->rows(3)
+                            ->columnSpanFull(),
                     ]),
             ]);
     }

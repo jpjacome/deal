@@ -3,6 +3,7 @@
 namespace App\Filament\Widgets;
 
 use App\Enums\BookingStatus;
+use App\Filament\Pages\Reports;
 use App\Filament\Resources\Bookings\BookingResource;
 use App\Models\Booking;
 use Filament\Widgets\StatsOverviewWidget;
@@ -26,7 +27,7 @@ class BookingStats extends StatsOverviewWidget
             ->count();
 
         $month = Booking::query()
-            ->whereIn('status', [BookingStatus::Confirmed, BookingStatus::Completed, BookingStatus::NoShow])
+            ->whereIn('status', [BookingStatus::Confirmed, BookingStatus::Completed])
             ->whereBetween('starts_at', [now()->startOfMonth(), now()->endOfMonth()])
             ->count();
 
@@ -38,7 +39,9 @@ class BookingStats extends StatsOverviewWidget
             Stat::make('Reservas hoy', $today)
                 ->url(BookingResource::getUrl('index', ['tab' => 'today'])),
             Stat::make('Próximos 7 días', $week),
-            Stat::make('Confirmadas este mes', $month),
+            Stat::make('Visitas este mes', $month)
+                ->description('Confirmadas y completadas')
+                ->url(Reports::getUrl()),
         ];
     }
 }

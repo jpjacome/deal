@@ -63,6 +63,12 @@ class AdminPanelTest extends TestCase
             '/admin/opening-hours',
             '/admin/blocked-periods',
             '/admin/users',
+            '/admin/settings',
+            '/admin/reports',
+            '/admin/reports?dias=365',
+            '/admin/waitlist-entries',
+            '/admin/profile',
+            '/admin/agenda?vista=semana',
         ];
 
         foreach ($pages as $page) {
@@ -225,13 +231,19 @@ class AdminPanelTest extends TestCase
         $this->assertSame(1, Customer::count());
     }
 
-    public function test_agenda_shows_the_weeks_bookings(): void
+    public function test_agenda_shows_day_timeline_and_week(): void
     {
-        Booking::factory()->create(['starts_at' => CarbonImmutable::parse('2026-11-04 10:00'), 'ends_at' => CarbonImmutable::parse('2026-11-04 11:00')]);
+        $booking = Booking::factory()->create(['starts_at' => CarbonImmutable::parse('2026-11-04 10:00'), 'ends_at' => CarbonImmutable::parse('2026-11-04 11:00')]);
 
         Livewire::test(Agenda::class)
+            ->assertDontSee('10:00–11:00') // today (Monday) is empty
+            ->call('next')
+            ->call('next')
             ->assertSee('10:00–11:00')
-            ->call('nextWeek')
+            ->assertSee(route('filament.admin.resources.bookings.create', ['space' => $booking->space_id, 'date' => '2026-11-04', 'start' => '12:00']))
+            ->set('mode', 'semana')
+            ->assertSee('10:00–11:00')
+            ->call('next')
             ->assertDontSee('10:00–11:00');
     }
 }

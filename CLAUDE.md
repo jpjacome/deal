@@ -8,6 +8,9 @@ Spec: see `PLAN.md` (scope, data model, booking rules, notifications, delivery p
 - Admin panel + CMS: Filament v5 at `/admin`. Public interactive parts: Livewire 4 + Blade.
 - Two environments: **local** (Herd at `http://deal.test`, SQLite) and **production** (shared host, MySQL). Keep everything env-driven (`.env`), migrations portable between SQLite and MySQL, no hard-coded URLs/paths. Production runs queues/scheduler via cron (`schedule:run` every minute).
 - Composer on Windows: `^` gets eaten by the `.bat` wrapper — use `~x.y` constraints.
+- Booking logic lives in `app/Actions/Bookings/*` + `app/Services/Availability.php`; side effects (emails, WhatsApp, team alerts, waitlist) are driven by events in `app/Events` → `app/Listeners/SendBookingNotifications.php`. Time-based jobs: `app/Services/BookingAutomation.php` via `bookings:tick` (routes/console.php).
+- WhatsApp template names/bodies to submit to Meta: `app/Notifications/WhatsApp/Templates.php`. Venue texts/recipients/rules are DB settings (`App\Models\Setting`, admin "Ajustes").
+- Production checklist: MySQL, `QUEUE_CONNECTION=database`, cron `* * * * * php artisan schedule:run`, `php artisan storage:link`, `npm run build` (or upload `public/build`), real mail provider + SPF/DKIM/DMARC, `WHATSAPP_*` env when Meta approves, `php artisan make:filament-user`.
 <laravel-boost-guidelines>
 === foundation rules ===
 

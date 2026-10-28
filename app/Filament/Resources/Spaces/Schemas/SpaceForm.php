@@ -3,7 +3,9 @@
 namespace App\Filament\Resources\Spaces\Schemas;
 
 use App\Enums\BookingMode;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -41,9 +43,16 @@ class SpaceForm
                         TextInput::make('type_label')
                             ->label('Tipo')
                             ->placeholder('Sala, Oficina, Coworking…'),
+                        TextInput::make('price')
+                            ->label('Precio')
+                            ->numeric()
+                            ->prefix('$')
+                            ->minValue(0)
+                            ->helperText('Por hora, por día o por persona al día según el tipo de reserva. Se usa para el total estimado.'),
                         TextInput::make('price_label')
-                            ->label('Precio (texto)')
-                            ->placeholder('$10 / hora'),
+                            ->label('Precio (texto alternativo)')
+                            ->placeholder('Consultar')
+                            ->helperText('Solo si no hay precio numérico.'),
                         TextInput::make('capacity')
                             ->label('Capacidad (personas)')
                             ->numeric()
@@ -58,6 +67,18 @@ class SpaceForm
                             ->label('Descripción')
                             ->rows(4)
                             ->columnSpanFull(),
+                        FileUpload::make('photo')
+                            ->label('Foto principal')
+                            ->image()
+                            ->disk('public')
+                            ->directory('spaces')
+                            ->imageEditor()
+                            ->imageAspectRatio('16:10')
+                            ->maxSize(4096),
+                        TagsInput::make('amenities')
+                            ->label('Equipamiento y servicios')
+                            ->placeholder('Pantalla, Pizarra, Café…')
+                            ->suggestions(['Wifi', 'Pantalla', 'Proyector', 'Pizarra', 'Café', 'Aire acondicionado', 'Luz natural', 'Videollamadas', 'Locker', 'Impresora']),
                         Toggle::make('is_active')
                             ->label('Visible en el sitio')
                             ->default(true),
@@ -80,6 +101,16 @@ class SpaceForm
                             ->helperText('Si está apagado, las reservas se confirman al instante.')
                             ->default(true)
                             ->inline(false),
+                        Toggle::make('allows_half_day')
+                            ->label('Permite medio día (mañana / tarde)')
+                            ->inline(false)
+                            ->live()
+                            ->visible(fn (Get $get): bool => ! self::isHourly($get('booking_mode'))),
+                        TextInput::make('half_day_price')
+                            ->label('Precio medio día')
+                            ->numeric()
+                            ->prefix('$')
+                            ->visible(fn (Get $get): bool => ! self::isHourly($get('booking_mode')) && $get('allows_half_day')),
                         Select::make('slot_minutes')
                             ->label('Intervalo de horarios')
                             ->options([15 => 'Cada 15 min', 30 => 'Cada 30 min', 60 => 'Cada hora'])

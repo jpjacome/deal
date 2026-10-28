@@ -56,6 +56,8 @@ enum BookingStatus: string implements HasColor, HasLabel
         return match ($this) {
             self::Pending => [self::Confirmed, self::Rejected, self::Cancelled, self::Expired],
             self::Confirmed => [self::Cancelled, self::Completed, self::NoShow],
+            // Bookings are completed automatically after they end; staff can still mark a no-show.
+            self::Completed => [self::NoShow],
             default => [],
         };
     }

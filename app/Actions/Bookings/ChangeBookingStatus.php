@@ -3,6 +3,7 @@
 namespace App\Actions\Bookings;
 
 use App\Enums\BookingStatus;
+use App\Events\BookingStatusChanged;
 use App\Models\Booking;
 use App\Models\User;
 use DomainException;
@@ -11,11 +12,18 @@ use Illuminate\Support\Facades\DB;
 class ChangeBookingStatus
 {
     /**
+     * @param  bool  $byCustomer  The customer did it themselves (booking page or WhatsApp button).
+     *
      * @throws DomainException When the status change isn't allowed.
      */
-    public function handle(Booking $booking, BookingStatus $to, ?User $changedBy = null, ?string $reason = null): Booking
-    {
-        return DB::transaction(function () use ($booking, $to, $changedBy, $reason) {
+    public function handle(
+        Booking $booking,
+        BookingStatus $to,
+        ?User $changedBy = null,
+        ?string $reason = null,
+        bool $byCustomer = false,
+    ): Booking {
+        return DB::transaction(function () use ($booking, $to, $changedBy, $reason, $byCustomer) {
             $booking = Booking::whereKey($booking->getKey())->lockForUpdate()->firstOrFail();
             $from = $booking->status;
 
@@ -41,6 +49,8 @@ class ChangeBookingStatus
                 'to_status' => $to,
                 'note' => $reason,
             ]);
+
+            BookingStatusChanged::dispatch($booking, $from, $to, $changedBy, $byCustomer);
 
             return $booking;
         });

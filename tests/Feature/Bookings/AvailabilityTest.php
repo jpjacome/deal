@@ -146,8 +146,8 @@ class AvailabilityTest extends TestCase
         $today = CarbonImmutable::parse('2026-11-02');
         $farAway = CarbonImmutable::parse('2026-12-02'); // Wednesday
 
-        $this->availability->ensureBookable($space, $today->setTime(9, 0), $today->setTime(10, 0), enforceWindow: false);
-        $this->availability->ensureBookable($space, $farAway->setTime(9, 0), $farAway->setTime(10, 0), enforceWindow: false);
+        $this->availability->ensureBookable($space, $today->setTime(9, 0), $today->setTime(10, 0), strict: false);
+        $this->availability->ensureBookable($space, $farAway->setTime(9, 0), $farAway->setTime(10, 0), strict: false);
 
         $this->expectExceptionMessage('hasta 7 días por adelantado');
         $this->availability->ensureBookable($space, $farAway->setTime(9, 0), $farAway->setTime(10, 0));

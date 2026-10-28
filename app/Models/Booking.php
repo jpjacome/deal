@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\BookingSource;
 use App\Enums\BookingStatus;
+use App\Services\Availability;
 use Database\Factories\BookingFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -18,6 +19,7 @@ use Illuminate\Support\Str;
 #[Fillable([
     'space_id', 'customer_id', 'starts_at', 'ends_at', 'attendees', 'notes',
     'status', 'status_reason', 'source', 'confirmed_at', 'cancelled_at', 'reminder_sent_at',
+    'series_id', 'pending_reminder_sent_at', 'attendance_confirmed_at', 'checked_in_at', 'feedback_sent_at',
 ])]
 #[Hidden(['manage_token'])]
 class Booking extends Model
@@ -51,7 +53,53 @@ class Booking extends Model
             'confirmed_at' => 'datetime',
             'cancelled_at' => 'datetime',
             'reminder_sent_at' => 'datetime',
+            'pending_reminder_sent_at' => 'datetime',
+            'attendance_confirmed_at' => 'datetime',
+            'checked_in_at' => 'datetime',
+            'feedback_sent_at' => 'datetime',
         ];
+    }
+
+    public function notificationLogs(): HasMany
+    {
+        return $this->hasMany(NotificationLog::class)->latest('id');
+    }
+
+    /**
+     * "Miércoles 4 de noviembre, 10:00–12:00"
+     */
+    public function scheduleLabel(): string
+    {
+        return ucfirst($this->starts_at->translatedFormat('l j \d\e F')).', '.$this->starts_at->format('H:i').'–'.$this->ends_at->format('H:i');
+    }
+
+    /**
+     * Estimated price from the space's numeric price, or null when the space has none.
+     */
+    public function estimatedPrice(): ?float
+    {
+        $minutes = (int) $this->starts_at->diffInMinutes($this->ends_at);
+        $halfDay = false;
+
+        if ($this->space->booking_mode->isFullDay()) {
+            $bounds = app(Availability::class)->dayBounds($this->space, $this->starts_at);
+            $halfDay = $bounds !== null && $minutes < (int) $bounds[0]->diffInMinutes($bounds[1]);
+        }
+
+        return $this->space->estimatePrice($minutes, $this->attendees, $halfDay);
+    }
+
+    public function manageUrl(): string
+    {
+        return route('bookings.show', $this->manage_token);
+    }
+
+    /**
+     * Customers can reschedule online under the same window as cancelling.
+     */
+    public function canBeRescheduledByCustomer(): bool
+    {
+        return $this->canBeCancelledByCustomer();
     }
 
     public function space(): BelongsTo

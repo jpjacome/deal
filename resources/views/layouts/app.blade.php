@@ -18,9 +18,8 @@
             <a href="{{ route('home') }}" class="logo" aria-label="{{ config('app.name') }} — inicio"><x-logo /></a>
             <nav>
                 <a href="{{ route('home') }}#espacios">Espacios</a>
-                <a href="#">Planes</a>
-                <a href="#">Galería</a>
-                <a href="#">Contacto</a>
+                <a href="{{ route('contact') }}">Contacto</a>
+                <a href="{{ route('bookings.lookup') }}">Mi reserva</a>
                 <a href="{{ route('bookings.create') }}" class="btn">Reservar</a>
             </nav>
         </div>
@@ -33,7 +32,10 @@
     <footer class="site-footer gradient">
         <div class="container">
             <a href="{{ route('home') }}" class="logo" aria-label="{{ config('app.name') }}"><x-logo /></a>
-            <span>&copy; {{ date('Y') }} {{ config('app.name') }} · Cuenca, Ecuador</span>
+            <span>
+                &copy; {{ date('Y') }} {{ config('app.name') }} · {{ \App\Models\Setting::get('venue_address') }}<br>
+                <a href="{{ route('privacy') }}">Privacidad</a> · <a href="{{ route('terms') }}">Condiciones</a> · <a href="{{ route('contact') }}">Contacto</a>
+            </span>
         </div>
     </footer>
 </body>

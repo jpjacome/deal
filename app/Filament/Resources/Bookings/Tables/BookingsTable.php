@@ -22,7 +22,9 @@ class BookingsTable
     {
         return $table
             ->modifyQueryUsing(fn (Builder $query) => $query->with(['space', 'customer']))
-            ->defaultSort('starts_at', 'desc')
+            // Upcoming views read soonest first; "Todas" shows the newest first.
+            ->defaultSort('starts_at', fn ($livewire): string => ($livewire->activeTab ?? null) === 'all' ? 'desc' : 'asc')
+            ->poll('30s')
             ->columns([
                 TextColumn::make('code')
                     ->label('Código')

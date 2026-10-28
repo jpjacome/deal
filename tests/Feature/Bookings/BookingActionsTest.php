@@ -66,11 +66,14 @@ class BookingActionsTest extends TestCase
     public function test_returning_customers_are_matched_by_email(): void
     {
         $this->book(Space::factory()->create(), ['email' => 'Ana@Example.com ', 'whatsapp_opt_in' => true]);
-        $this->book(Space::factory()->create(), ['name' => 'Ana P. Pérez']);
+        $this->book(Space::factory()->create(), ['name' => 'Otra Persona', 'phone' => '+593990000000']);
 
         $customer = Customer::sole();
         $this->assertSame('ana@example.com', $customer->email);
-        $this->assertSame('Ana P. Pérez', $customer->name);
+        // The website never overwrites an existing customer's name or phone.
+        $this->assertSame('Ana Pérez', $customer->name);
+        $this->assertSame('+593991234567', $customer->phone);
+        $this->assertSame('2026-10-27', $customer->privacy_version);
         $this->assertCount(2, $customer->bookings);
         $this->assertNotNull($customer->privacy_accepted_at);
     }

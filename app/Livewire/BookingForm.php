@@ -5,37 +5,40 @@ namespace App\Livewire;
 use App\Actions\Bookings\CreateBooking;
 use App\Enums\BookingSource;
 use App\Exceptions\BookingUnavailable;
+use App\Livewire\Concerns\PicksSchedule;
 use App\Models\Space;
-use App\Services\Availability;
+use App\Models\WaitlistEntry;
 use App\Support\PhoneNumber;
-use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Url;
 use Livewire\Component;
-use Throwable;
 
 /**
- * Public booking flow: space → date → time → contact details.
+ * Public booking flow: space → day → time → contact details.
  */
 class BookingForm extends Component
 {
+    use PicksSchedule;
+
     #[Url(as: 'espacio')]
     public ?string $spaceSlug = null;
 
-    public ?string $date = null;
+    /** Pre-selected day/time from links ("se liberó un espacio", "libre ahora"). */
+    #[Url(as: 'fecha', except: null)]
+    public ?string $initialDate = null;
 
-    public ?int $duration = null;
-
-    public ?string $time = null;
-
-    public int $attendees = 1;
+    #[Url(as: 'hora', except: null)]
+    public ?string $initialTime = null;
 
     public string $name = '';
 
     public string $email = '';
+
+    public string $countryCode = '593';
 
     public string $phone = '';
 
@@ -45,10 +48,13 @@ class BookingForm extends Component
 
     public bool $privacy = false;
 
-    public bool $whatsapp = true;
+    /** Explicit opt-in (LOPDP / Meta policy): never pre-ticked. */
+    public bool $whatsapp = false;
 
     /** Honeypot: hidden from people, bots fill it in. */
     public string $website = '';
+
+    public bool $joinedWaitlist = false;
 
     public function mount(): void
     {
@@ -57,26 +63,30 @@ class BookingForm extends Component
         }
 
         $this->resetSchedule();
+
+        if ($this->space && $this->initialDate) {
+            $this->date = $this->initialDate;
+            $this->time = $this->initialTime;
+
+            if (! $this->day) {
+                $this->date = $this->time = null;
+            }
+        }
     }
 
     public function updatedSpaceSlug(): void
     {
         $this->resetSchedule();
+        $this->initialDate = $this->initialTime = null;
+        $this->joinedWaitlist = false;
     }
 
-    public function updatedDate(): void
+    public function switchSpace(string $slug): void
     {
-        $this->time = null;
-    }
-
-    public function updatedDuration(): void
-    {
-        $this->time = null;
-    }
-
-    public function updatedAttendees(): void
-    {
-        $this->time = null;
+        $date = $this->date;
+        $this->spaceSlug = $slug;
+        $this->updatedSpaceSlug();
+        $this->date = $date;
     }
 
     /**
@@ -94,97 +104,9 @@ class BookingForm extends Component
         return $this->spaces->firstWhere('slug', $this->spaceSlug);
     }
 
-    #[Computed]
-    public function day(): ?CarbonImmutable
+    protected function scheduleSpace(): ?Space
     {
-        try {
-            $day = CarbonImmutable::createFromFormat('!Y-m-d', (string) $this->date);
-        } catch (Throwable) {
-            return null;
-        }
-
-        return $day && $day->betweenIncluded(today(), $this->maxDate()) ? $day : null;
-    }
-
-    /**
-     * Duration options in minutes for hourly spaces.
-     *
-     * @return list<int>
-     */
-    #[Computed]
-    public function durations(): array
-    {
-        $space = $this->space;
-
-        return $space ? range($space->min_minutes, $space->max_minutes, $space->slot_minutes) : [];
-    }
-
-    /**
-     * @return list<CarbonImmutable>
-     */
-    #[Computed]
-    public function startTimes(): array
-    {
-        if (! $this->space || ! $this->day || ! $this->duration) {
-            return [];
-        }
-
-        return app(Availability::class)->availableStartTimes($this->space, $this->day, $this->duration, $this->attendees);
-    }
-
-    /**
-     * Why the selected full day can't be booked; null when it can (or nothing is selected).
-     */
-    #[Computed]
-    public function dayProblem(): ?string
-    {
-        if (! $this->space?->booking_mode->isFullDay() || ! $this->day) {
-            return null;
-        }
-
-        $bounds = app(Availability::class)->dayBounds($this->space, $this->day);
-
-        if ($bounds === null) {
-            return 'Ese día estamos cerrados.';
-        }
-
-        try {
-            app(Availability::class)->ensureBookable($this->space, $bounds[0], $bounds[1], $this->attendees);
-        } catch (BookingUnavailable $e) {
-            return $e->getMessage();
-        }
-
-        return null;
-    }
-
-    /**
-     * The chosen time range, once space, date and time are all picked.
-     *
-     * @return array{0: CarbonImmutable, 1: CarbonImmutable}|null
-     */
-    #[Computed]
-    public function selection(): ?array
-    {
-        if (! $this->space || ! $this->day) {
-            return null;
-        }
-
-        if ($this->space->booking_mode->isFullDay()) {
-            return $this->dayProblem === null ? app(Availability::class)->dayBounds($this->space, $this->day) : null;
-        }
-
-        if (! $this->time || ! $this->duration) {
-            return null;
-        }
-
-        $start = $this->day->setTimeFromTimeString($this->time);
-
-        return [$start, $start->addMinutes($this->duration)];
-    }
-
-    public function maxDate(): CarbonImmutable
-    {
-        return today()->toImmutable()->addDays($this->space->horizon_days ?? 60);
+        return $this->space;
     }
 
     public function book(CreateBooking $createBooking)
@@ -193,7 +115,8 @@ class BookingForm extends Component
             return null;
         }
 
-        $this->phone = PhoneNumber::normalize($this->phone) ?? $this->phone;
+        $this->phone = PhoneNumber::normalize($this->phone, $this->countryCode) ?? $this->phone;
+        $this->email = Str::lower(trim($this->email));
 
         $this->validate([
             'spaceSlug' => ['required'],
@@ -206,8 +129,8 @@ class BookingForm extends Component
             'notes' => ['nullable', 'string', 'max:1000'],
             'privacy' => ['accepted'],
         ], [
-            'phone.regex' => 'Ingresa un número de celular válido, por ejemplo 099 123 4567.',
-            'privacy.accepted' => 'Debes aceptar la política de privacidad para reservar.',
+            'phone.regex' => 'Revisa el número de celular y el código de país.',
+            'privacy.accepted' => 'Debes aceptar la política de privacidad y las condiciones para reservar.',
         ]);
 
         if ($this->selection === null) {
@@ -218,7 +141,7 @@ class BookingForm extends Component
 
         $rateKey = 'booking:'.request()->ip();
 
-        if (RateLimiter::tooManyAttempts($rateKey, 5)) {
+        if (RateLimiter::tooManyAttempts($rateKey, 10)) {
             $this->addError('form', 'Has hecho demasiadas reservas seguidas. Inténtalo más tarde o escríbenos por WhatsApp.');
 
             return null;
@@ -246,7 +169,7 @@ class BookingForm extends Component
             );
         } catch (BookingUnavailable $e) {
             // Someone else took the slot meanwhile: refresh the options and explain.
-            unset($this->startTimes, $this->dayProblem, $this->selection);
+            $this->refreshSchedule();
             $this->time = null;
             $this->addError('time', $e->getMessage());
 
@@ -258,16 +181,30 @@ class BookingForm extends Component
         return $this->redirectRoute('bookings.show', $booking->manage_token);
     }
 
-    private function resetSchedule(): void
+    /**
+     * "Avísame si se libera": join the waitlist for the chosen space and day.
+     */
+    public function joinWaitlist(): void
     {
-        $this->date = null;
-        $this->time = null;
-        $this->attendees = 1;
-        $this->duration = $this->space?->booking_mode->isFullDay() ? null : $this->space?->min_minutes;
+        $this->validate([
+            'name' => ['required', 'string', 'max:120'],
+            'email' => ['required', 'email', 'max:190'],
+        ]);
+
+        if (! $this->space || ! $this->day) {
+            return;
+        }
+
+        WaitlistEntry::firstOrCreate(
+            ['space_id' => $this->space->id, 'date' => $this->day->toDateString(), 'email' => Str::lower(trim($this->email)), 'notified_at' => null],
+            ['name' => $this->name, 'phone' => PhoneNumber::normalize($this->phone, $this->countryCode), 'whatsapp_opt_in' => $this->whatsapp],
+        );
+
+        $this->joinedWaitlist = true;
     }
 
     public function render(): View
     {
-        return view('livewire.booking-form');
+        return view('livewire.booking-form', ['countries' => PhoneNumber::COUNTRIES]);
     }
 }

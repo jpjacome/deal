@@ -58,7 +58,8 @@ class BookingFlowTest extends TestCase
             ->set('date', '2026-11-04')
             ->set('duration', 120)
             ->assertSee('10:00')
-            ->set('time', '10:00');
+            ->set('time', '10:00')
+            ->set('whatsapp', true);
 
         $this->fillDetails($component)
             ->call('book')
@@ -81,7 +82,7 @@ class BookingFlowTest extends TestCase
             ->set('spaceSlug', 'coworking')
             ->set('date', '2026-11-04')
             ->set('attendees', 2)
-            ->assertSee('Hay disponibilidad');
+            ->assertSee('Día completo · 08:00–19:00');
 
         $this->fillDetails($component)->call('book')->assertHasNoErrors();
 

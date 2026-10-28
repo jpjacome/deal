@@ -28,6 +28,16 @@ class BookingInfolist
                         TextEntry::make('attendees')->label('Personas'),
                         TextEntry::make('source')->label('Origen')->badge()->color('gray'),
                         TextEntry::make('created_at')->label('Creada')->dateTime('d/m/Y H:i'),
+                        TextEntry::make('checked_in_at')->label('Llegada')->dateTime('H:i')->placeholder('Sin registrar'),
+                        TextEntry::make('attendance_confirmed_at')
+                            ->label('Confirmó asistencia')
+                            ->dateTime('d/m H:i')
+                            ->placeholder('—')
+                            ->helperText('Con el botón del recordatorio de WhatsApp.'),
+                        TextEntry::make('series_id')
+                            ->label('Serie semanal')
+                            ->formatStateUsing(fn (Booking $record): string => Booking::where('series_id', $record->series_id)->count().' reservas en la serie')
+                            ->visible(fn (Booking $record): bool => $record->series_id !== null),
                         TextEntry::make('notes')->label('Notas del cliente')->placeholder('—')->columnSpanFull(),
                         TextEntry::make('status_reason')->label('Motivo del estado')->placeholder('—')->columnSpanFull(),
                     ]),
@@ -58,6 +68,33 @@ class BookingInfolist
                                 TextEntry::make('to_status')->label('Estado')->badge(),
                                 TextEntry::make('user.name')->label('Por')->placeholder('Cliente / sistema'),
                                 TextEntry::make('note')->label('Nota')->placeholder('—'),
+                            ]),
+                    ]),
+                Section::make('Mensajes enviados')
+                    ->columnSpanFull()
+                    ->collapsible()
+                    ->collapsed()
+                    ->schema([
+                        RepeatableEntry::make('notificationLogs')
+                            ->hiddenLabel()
+                            ->columns(5)
+                            ->placeholder('Todavía no se ha enviado ningún mensaje.')
+                            ->schema([
+                                TextEntry::make('created_at')->label('Fecha')->dateTime('d/m/Y H:i'),
+                                TextEntry::make('channel')->label('Canal')->formatStateUsing(fn (string $state): string => $state === 'mail' ? 'Correo' : 'WhatsApp'),
+                                TextEntry::make('template')->label('Mensaje'),
+                                TextEntry::make('recipient')->label('Para'),
+                                TextEntry::make('status')
+                                    ->label('Estado')
+                                    ->badge()
+                                    ->color(fn (string $state): string => $state === 'failed' ? 'danger' : 'success')
+                                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                                        'delivered' => 'Entregado',
+                                        'read' => 'Leído',
+                                        'failed' => 'Falló',
+                                        default => 'Enviado',
+                                    })
+                                    ->tooltip(fn ($record): ?string => $record->error),
                             ]),
                     ]),
             ]);

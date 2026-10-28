@@ -28,13 +28,13 @@ class ListBookings extends ListRecords
     {
         return [
             'upcoming' => Tab::make('Próximas')
-                ->modifyQueryUsing(fn (Builder $query) => $query->holdingSlot()->where('ends_at', '>=', now())->reorder('starts_at')),
+                ->modifyQueryUsing(fn (Builder $query) => $query->holdingSlot()->where('ends_at', '>=', now())),
             'pending' => Tab::make('Pendientes')
                 ->badge(Booking::where('status', BookingStatus::Pending)->count() ?: null)
                 ->badgeColor('warning')
-                ->modifyQueryUsing(fn (Builder $query) => $query->where('status', BookingStatus::Pending)->reorder('starts_at')),
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('status', BookingStatus::Pending)),
             'today' => Tab::make('Hoy')
-                ->modifyQueryUsing(fn (Builder $query) => $query->whereDate('starts_at', today())->reorder('starts_at')),
+                ->modifyQueryUsing(fn (Builder $query) => $query->whereDate('starts_at', today())),
             'all' => Tab::make('Todas'),
         ];
     }

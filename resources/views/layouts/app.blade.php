@@ -11,8 +11,9 @@
     <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
     @fonts
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @stack('head')
 </head>
-<body>
+<body class="{{ $bodyClass ?? '' }}">
     <header class="site-header">
         <div class="container">
             <div>
@@ -31,6 +32,8 @@
         @yield('content')
     </main>
 
+    @stack('before-footer')
+
     <footer class="site-footer">
         <div class="container">
             <div class="tile tile-dark">
@@ -41,6 +44,7 @@
                         <p>{{ \App\Models\Setting::get('venue_address') }}</p>
                     </div>
                     <div>
+                        <p><a href="{{ route('home') }}#espacios">Espacios</a></p>
                         <p><a href="{{ route('bookings.create') }}">Reservar</a></p>
                         <p><a href="{{ route('contact') }}">Contacto</a></p>
                         <p><a href="{{ route('bookings.lookup') }}">Mi reserva</a></p>

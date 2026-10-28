@@ -26,7 +26,19 @@ class PageController extends Controller
             ->filter(fn (array $row) => $row['start'] !== null)
             ->values();
 
-        return view('home', ['spaces' => $spaces, 'freeToday' => $freeToday]);
+        $todayHours = OpeningHour::whereNull('space_id')
+            ->where('weekday', today()->dayOfWeekIso)
+            ->orderBy('opens_at')
+            ->get()
+            ->map(fn (OpeningHour $h) => substr($h->opens_at, 0, 5).'–'.substr($h->closes_at, 0, 5))
+            ->join(' · ');
+
+        return view('home', [
+            'spaces' => $spaces,
+            'freeToday' => $freeToday,
+            'todayHours' => $todayHours,
+            'settings' => Setting::values(),
+        ]);
     }
 
     public function contact(): View

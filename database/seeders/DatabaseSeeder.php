@@ -6,6 +6,7 @@ use App\Enums\BookingMode;
 use App\Models\OpeningHour;
 use App\Models\Space;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * Placeholder venue setup until Deal confirms its spaces and hours (PLAN.md §11).
@@ -32,8 +33,17 @@ class DatabaseSeeder extends Seeder
             ['slug' => 'puesto-flexible', 'name' => 'Puesto flexible', 'type_label' => 'Coworking', 'capacity' => 20, 'booking_mode' => BookingMode::Capacity, 'requires_approval' => false, 'price' => 12, 'allows_half_day' => true, 'half_day_price' => 7, 'amenities' => ['Wifi', 'Café', 'Locker'], 'sort' => 4],
         ];
 
-        foreach ($spaces as $space) {
-            Space::updateOrCreate(['slug' => $space['slug']], $space);
+        // Stand-in Unsplash photos (public/images/home) until Deal uploads its own; never overwrites an upload.
+        $photos = ['sala-de-reuniones' => 'meeting', 'cabina-privada' => 'focus', 'oficina-privada' => 'office', 'puesto-flexible' => 'flex'];
+
+        foreach ($spaces as $data) {
+            $space = Space::updateOrCreate(['slug' => $data['slug']], $data);
+            $source = public_path('images/home/'.($photos[$space->slug] ?? '').'-900.webp');
+
+            if (! $space->photo && isset($photos[$space->slug]) && is_file($source)) {
+                Storage::disk('public')->put("spaces/{$space->slug}.webp", file_get_contents($source));
+                $space->update(['photo' => "spaces/{$space->slug}.webp"]);
+            }
         }
     }
 }

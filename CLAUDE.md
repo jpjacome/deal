@@ -3,7 +3,8 @@
 Spec: see `PLAN.md` (scope, data model, booking rules, notifications, delivery plan).
 
 - Public site in **Spanish**; app timezone `America/Guayaquil`.
-- **No Tailwind or CSS frameworks.** One stylesheet: `resources/css/app.css` — 5 color vars, one `--radius`, two font vars, base element styles. Write plain CSS using those variables.
+- **No Tailwind or CSS frameworks.** One stylesheet for the public site: `resources/css/app.css` — 5 color vars (`--primary` red, `--accent` orange, `--dark` wine, `--light` cream, `--surface` stone), one `--radius`, two font vars (Outfit headings, Inter body). Write plain CSS using those variables; derive tints with `color-mix()`, never add colors. Building blocks: `.tile`, `.tile-dark`, `.gradient`, `.bento` + `.span-*`, `.supergraphic` (cropped wordmark), `.eyebrow`, `.bubble`, `.chip`.
+- Admin skin: `resources/css/admin.css` (plain CSS over Filament's `fi-*` classes, same variables, loaded via a render hook in `AdminPanelProvider`). Don't load `app.css` in the admin.
 - Brand (from `DEAL HUB.pdf`, not a brand book yet): orange→red→maroon gradient, cream `#f5eace`, rounded cards, speech-bubble motif. Wordmark: `public/images/deal-logo.svg` (uses `currentColor`; render inline with `<x-logo />`). Deck font is SF Pro Display; the web uses Inter as stand-in.
 - Admin panel + CMS: Filament v5 at `/admin`. Public interactive parts: Livewire 4 + Blade.
 - Two environments: **local** (Herd at `http://deal.test`, SQLite) and **production** (shared host, MySQL). Keep everything env-driven (`.env`), migrations portable between SQLite and MySQL, no hard-coded URLs/paths. Production runs queues/scheduler via cron (`schedule:run` every minute).

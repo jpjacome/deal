@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Customers\Schemas;
 
+use App\Filament\Forms\PhoneField;
 use App\Models\Setting;
 use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\Textarea;
@@ -27,10 +28,8 @@ class CustomerForm
                             ->label('Correo')
                             ->email()
                             ->unique(ignoreRecord: true),
-                        TextInput::make('phone')
-                            ->label('Celular')
-                            ->tel()
-                            ->helperText('Formato internacional, p. ej. +593991234567'),
+                        PhoneField::make('phone')
+                            ->label('Celular'),
                         TextInput::make('company')
                             ->label('Empresa'),
                         Toggle::make('whatsapp_opt_in')

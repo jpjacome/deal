@@ -9,6 +9,7 @@ use App\Filament\Pages\Settings;
 use App\Filament\Resources\BlockedPeriods\Pages\ManageBlockedPeriods;
 use App\Filament\Resources\Bookings\Pages\CreateBooking;
 use App\Filament\Resources\Bookings\Pages\ViewBooking;
+use App\Filament\Resources\Customers\Pages\EditCustomer;
 use App\Models\BlockedPeriod;
 use App\Models\Booking;
 use App\Models\OpeningHour;
@@ -67,6 +68,28 @@ class AdminToolsTest extends TestCase
         $this->assertSame('+593991234567', Setting::get('whatsapp_number'));
         $this->assertSame(['equipo@deal.ec'], Setting::get('notify_emails'));
         $this->assertSame('2026-11-02 08:00', Setting::get('privacy_version'));
+    }
+
+    public function test_admin_phone_fields_store_full_international_numbers(): void
+    {
+        $customer = Booking::factory()->create()->customer;
+
+        Livewire::test(EditCustomer::class, ['record' => $customer->getRouteKey()])
+            ->fillForm(['phone' => '098 765 4321'])
+            ->call('save')
+            ->assertHasNoFormErrors();
+        $this->assertSame('+593987654321', $customer->fresh()->phone);
+
+        Livewire::test(EditCustomer::class, ['record' => $customer->getRouteKey()])
+            ->fillForm(['phone' => '123'])
+            ->call('save')
+            ->assertHasFormErrors(['phone']);
+
+        Livewire::test(Settings::class)
+            ->fillForm(['notify_whatsapp' => ['099 111 2233', '+1 305 555 0134']])
+            ->call('save')
+            ->assertHasNoFormErrors();
+        $this->assertSame(['+593991112233', '+13055550134'], Setting::get('notify_whatsapp'));
     }
 
     public function test_only_admins_see_settings(): void

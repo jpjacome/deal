@@ -2,10 +2,11 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Forms\PhoneField;
 use App\Models\Setting;
+use App\Rules\ValidPhoneNumber;
 use App\Support\PhoneNumber;
 use BackedEnum;
-use Closure;
 use Filament\Actions\Action;
 use Filament\Forms\Components\MarkdownEditor;
 use Filament\Forms\Components\TagsInput;
@@ -67,17 +68,9 @@ class Settings extends Page
                                 TextInput::make('venue_address')->label('Dirección')->required()->columnSpanFull(),
                                 TextInput::make('maps_url')->label('Enlace de Google Maps')->url(),
                                 TextInput::make('contact_email')->label('Correo de contacto')->email(),
-                                TextInput::make('whatsapp_number')
+                                PhoneField::make('whatsapp_number')
                                     ->label('WhatsApp de Deal')
-                                    ->tel()
-                                    ->placeholder('+593 99 123 4567')
-                                    ->helperText('Número completo con código de país, p. ej. +593 99 123 4567. Se usa en los botones "Escríbenos por WhatsApp".')
-                                    ->rule(fn (): Closure => function (string $attribute, mixed $value, Closure $fail): void {
-                                        if (filled($value) && PhoneNumber::normalize($value) === null) {
-                                            $fail('Número no válido. Escríbelo con código de país, p. ej. +593 99 123 4567.');
-                                        }
-                                    })
-                                    ->dehydrateStateUsing(fn (?string $state) => PhoneNumber::normalize($state) ?? $state),
+                                    ->helperText('Con código de país. Se usa en los botones "Escríbenos por WhatsApp".'),
                                 Textarea::make('arrival_info')
                                     ->label('Información de llegada')
                                     ->placeholder("Wifi: Deal-Guest / clave…\nParqueadero en la calle lateral.\nAnúnciate en recepción, planta baja.")
@@ -93,8 +86,13 @@ class Settings extends Page
                                 TagsInput::make('notify_emails')->label('Correos')->placeholder('reservas@deal.ec')->nestedRecursiveRules(['email']),
                                 TagsInput::make('notify_whatsapp')
                                     ->label('Números de WhatsApp')
-                                    ->placeholder('+593991234567')
-                                    ->helperText('Requiere la API de WhatsApp activa. Formato internacional.'),
+                                    ->placeholder(PhoneField::EXAMPLE)
+                                    ->helperText('Con código de país (sin él se asume Ecuador). Requiere la API de WhatsApp activa.')
+                                    ->nestedRecursiveRules([new ValidPhoneNumber])
+                                    ->dehydrateStateUsing(fn (?array $state): array => array_values(array_map(
+                                        fn (string $number): string => PhoneNumber::normalize($number) ?? $number,
+                                        $state ?? [],
+                                    ))),
                             ]),
                     ]),
                     Tab::make('Reglas')->icon(Heroicon::OutlinedAdjustmentsHorizontal)->schema([

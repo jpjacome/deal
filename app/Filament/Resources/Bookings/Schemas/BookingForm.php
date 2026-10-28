@@ -4,11 +4,10 @@ namespace App\Filament\Resources\Bookings\Schemas;
 
 use App\Actions\Bookings\CreateRecurringBookings;
 use App\Enums\BookingMode;
+use App\Filament\Forms\PhoneField;
 use App\Models\Space;
 use App\Services\Availability;
-use App\Support\PhoneNumber;
 use Carbon\CarbonImmutable;
-use Closure;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -101,15 +100,8 @@ class BookingForm
                             ->label('Correo')
                             ->helperText('Opcional. Sin correo, el cliente no recibe la confirmación.')
                             ->email(),
-                        TextInput::make('phone')
-                            ->label('Celular')
-                            ->tel()
-                            ->placeholder('099 123 4567')
-                            ->rule(fn (): Closure => function (string $attribute, mixed $value, Closure $fail): void {
-                                if (filled($value) && PhoneNumber::normalize($value) === null) {
-                                    $fail('Número de celular no válido.');
-                                }
-                            }),
+                        PhoneField::make('phone')
+                            ->label('Celular'),
                         TextInput::make('company')
                             ->label('Empresa')
                             ->maxLength(120),

@@ -99,7 +99,7 @@ class PublicExperienceTest extends TestCase
             ->set('spaceSlug', 'oficina')
             ->call('pickDay', '2026-11-04')
             ->set('period', 'am')
-            ->assertSee('Total estimado')
+            ->assertSee('total estimado')
             ->assertSee('$25.00')
             ->set('name', 'Ana Pérez')
             ->set('email', 'ana@example.com')

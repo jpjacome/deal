@@ -1,47 +1,70 @@
 @extends('layouts.app')
 
 @section('content')
-    <section class="hero gradient">
-        <p class="eyebrow">Meet Hub</p>
-        <h1>Tu espacio de trabajo en Cuenca</h1>
-        <p>Contenido provisional. El diseño final se aplica en la fase de diseño.</p>
-        <a href="{{ route('bookings.create') }}" class="btn">Reservar un espacio</a>
-    </section>
+    <div class="container">
+        <section class="bento">
+            <div class="tile gradient hero span-8">
+                <span class="supergraphic supergraphic-hero" aria-hidden="true"><x-logo /></span>
+                <div class="hero-copy">
+                    <p class="eyebrow">Meet Hub · Cuenca</p>
+                    <h1>Tu espacio para trabajar, reunirte y crear.</h1>
+                    <p>Salas, oficinas y puestos flexibles. Elige el día, el horario, y listo: sin llamadas ni mensajes.</p>
+                    <div class="hero-actions">
+                        <a href="{{ route('bookings.create') }}" class="btn btn-light">Reservar ahora</a>
+                        <a href="#espacios" class="btn btn-ghost-light">Ver espacios</a>
+                    </div>
+                </div>
+            </div>
 
-    @if ($freeToday->isNotEmpty())
-        <section class="container section">
-            <h2>Libre hoy</h2>
-            <div class="free-now">
-                @foreach ($freeToday as $row)
-                    <a class="card" href="{{ route('bookings.create', ['espacio' => $row['space']->slug, 'fecha' => today()->toDateString(), 'hora' => $row['start']->format('H:i')]) }}">
-                        <strong>{{ $row['space']->name }}</strong><br>
-                        <span class="muted">Desde las {{ $row['start']->format('H:i') }} · reservar en 2 toques →</span>
-                    </a>
+            <div class="side-tiles span-4">
+                @if ($freeToday->isNotEmpty())
+                    <div class="tile">
+                        <p class="eyebrow">Libre hoy</p>
+                        <ul class="free-list">
+                            @foreach ($freeToday as $row)
+                                <li>
+                                    <a href="{{ route('bookings.create', ['espacio' => $row['space']->slug, 'fecha' => today()->toDateString(), 'hora' => $row['start']->format('H:i')]) }}">
+                                        <strong>{{ $row['space']->name }}</strong>
+                                        <span>desde {{ $row['start']->format('H:i') }} →</span>
+                                    </a>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
+                <div class="tile tile-dark">
+                    <p class="eyebrow">Reserva en un minuto</p>
+                    <ol class="steps-mini">
+                        <li>Elige tu espacio</li>
+                        <li>Elige el día y el horario</li>
+                        <li>Recibe la confirmación por correo</li>
+                    </ol>
+                </div>
+
+                <div class="tile">
+                    <p class="eyebrow">Visítanos</p>
+                    <p><strong>{{ \App\Models\Setting::get('venue_address') }}</strong></p>
+                    <a href="{{ route('contact') }}">Horario y cómo llegar →</a>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" id="espacios">
+            <div class="section-head">
+                <div>
+                    <p class="eyebrow">Espacios</p>
+                    <h2>Encuentra el tuyo</h2>
+                </div>
+                <a href="{{ route('bookings.create') }}" class="btn btn-secondary">Ver disponibilidad</a>
+            </div>
+            <div class="space-grid">
+                @foreach ($spaces as $space)
+                    <div class="space-card">
+                        <x-space-card :space="$space" :link="route('bookings.create', ['espacio' => $space->slug])" />
+                    </div>
                 @endforeach
             </div>
         </section>
-    @endif
-
-    <section class="container section" id="espacios">
-        <h2>Espacios</h2>
-        <div class="space-grid">
-            @foreach ($spaces as $space)
-                <div class="space-card">
-                    @if ($space->photoUrl())
-                        <img src="{{ $space->photoUrl() }}" alt="{{ $space->name }}" loading="lazy">
-                    @endif
-                    <div class="space-card-body">
-                        <h3>{{ $space->name }}</h3>
-                        <p class="muted">{{ $space->booking_mode->getLabel() }} · hasta {{ $space->capacity }} {{ $space->capacity === 1 ? 'persona' : 'personas' }}</p>
-                        @if ($space->price !== null)
-                            <p>${{ rtrim(rtrim(number_format((float) $space->price, 2), '0'), '.') }} {{ $space->priceUnitLabel() }}</p>
-                        @elseif ($space->price_label)
-                            <p>{{ $space->price_label }}</p>
-                        @endif
-                        <a href="{{ route('bookings.create', ['espacio' => $space->slug]) }}" class="btn">Reservar</a>
-                    </div>
-                </div>
-            @endforeach
-        </div>
-    </section>
+    </div>
 @endsection

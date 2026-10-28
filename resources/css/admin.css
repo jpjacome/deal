@@ -1,0 +1,111 @@
+/* Deal — admin panel skin. Plain CSS layered over Filament's own styles (no Tailwind build),
+   using the same brand variables as app.css. Selectors are prefixed with .fi-body so they win
+   over Filament's equally specific rules regardless of load order. */
+
+:root {
+  --primary: #971c1a;
+  --accent: #dd572f;
+  --dark: #4a0e14;
+  --light: #f5eace;
+  --surface: #ebe6df;
+
+  --font-heading: "Outfit", "Inter", system-ui, sans-serif;
+
+  /* Filament design tokens */
+  --radius-lg: 14px;
+  --radius-xl: 22px;
+  --radius-2xl: 28px;
+}
+
+/* Light mode: stone page, cards in a softened cream */
+:root:not(.dark) { --color-white: color-mix(in srgb, var(--light) 32%, #fff); }
+:root:not(.dark) .fi-body { background: var(--surface); }
+.dark .fi-body { background: color-mix(in srgb, var(--dark) 30%, #0b0405); }
+
+/* Typography */
+.fi-body .fi-header-heading { font-family: var(--font-heading); font-weight: 400; letter-spacing: -0.025em; }
+.fi-body .fi-section-header-heading,
+.fi-body .fi-modal-heading,
+.fi-body .fi-simple-header-heading,
+.fi-body .fi-ta-header-heading { font-family: var(--font-heading); font-weight: 500; letter-spacing: -0.01em; }
+
+/* Sidebar: wine, like the business cards */
+.fi-body .fi-sidebar {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--dark) 88%, var(--primary)), var(--dark) 55%, color-mix(in srgb, var(--dark) 78%, #000));
+  color: var(--light);
+  box-shadow: none;
+  border: 0;
+}
+.fi-body .fi-sidebar-header { background: transparent; box-shadow: none; border: 0; color: var(--light); }
+.fi-body .fi-sidebar-header .fi-icon-btn { color: color-mix(in srgb, var(--light) 70%, transparent); }
+.fi-body .fi-sidebar-group-label,
+.fi-body .fi-sidebar-group-btn .fi-icon {
+  color: color-mix(in srgb, var(--light) 55%, transparent);
+}
+.fi-body .fi-sidebar-group-label {
+  font-family: var(--font-heading);
+  font-weight: 300;
+  font-size: .68rem;
+  text-transform: uppercase;
+  letter-spacing: .32em;
+}
+.fi-body .fi-sidebar-item-btn { border-radius: 999px; }
+.fi-body .fi-sidebar-item-btn,
+.fi-body .fi-sidebar-item-btn .fi-sidebar-item-label { color: color-mix(in srgb, var(--light) 88%, transparent); }
+.fi-body .fi-sidebar-item-btn > .fi-icon { color: color-mix(in srgb, var(--light) 60%, transparent); }
+.fi-body .fi-sidebar-item-btn:hover,
+.fi-body .fi-sidebar-item-btn:focus-visible { background: color-mix(in srgb, var(--light) 10%, transparent); }
+.fi-body .fi-sidebar-item.fi-active > .fi-sidebar-item-btn { background: var(--light); }
+.fi-body .fi-sidebar-item.fi-active > .fi-sidebar-item-btn .fi-sidebar-item-label,
+.fi-body .fi-sidebar-item.fi-active > .fi-sidebar-item-btn > .fi-icon { color: var(--dark); }
+.fi-body .fi-sidebar-footer,
+.fi-body .fi-sidebar-database-notifications-btn { color: color-mix(in srgb, var(--light) 88%, transparent); }
+
+/* Top bar blends into the page */
+.fi-body .fi-topbar { box-shadow: none; background: color-mix(in srgb, var(--surface) 85%, transparent); backdrop-filter: blur(10px); }
+.dark .fi-body .fi-topbar { background: color-mix(in srgb, var(--dark) 25%, #0b0405); }
+:root:not(.dark) .fi-body .fi-topbar .fi-logo { color: var(--primary); }
+
+/* Rounder, softer surfaces */
+.fi-body .fi-section:not(.fi-section-not-contained),
+.fi-body .fi-ta-ctn,
+.fi-body .fi-wi-stats-overview-stat { border-radius: var(--radius-2xl); box-shadow: 0 1px 0 rgba(74, 14, 20, .06); }
+.fi-body .fi-btn,
+.fi-body .fi-tabs { border-radius: 999px; }
+.fi-body .fi-badge { border-radius: 999px 999px 999px 4px; } /* speech bubble */
+
+/* Dashboard: the "pending" stat as a brand gradient tile */
+.fi-body .fi-wi-stats-overview-stat.deal-stat-highlight { background: linear-gradient(160deg, var(--accent), var(--primary) 55%, var(--dark)); }
+.fi-body .deal-stat-highlight .fi-wi-stats-overview-stat-label,
+.fi-body .deal-stat-highlight .fi-wi-stats-overview-stat-value,
+.fi-body .deal-stat-highlight .fi-wi-stats-overview-stat-description,
+.fi-body .deal-stat-highlight .fi-icon { color: var(--light); }
+.fi-body .fi-wi-stats-overview-stat-value { font-family: var(--font-heading); font-weight: 400; letter-spacing: -0.02em; }
+
+/* Login & password reset: gradient with the oversized cream wordmark */
+.fi-body .fi-simple-layout {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(180deg, var(--accent), var(--primary) 50%, var(--dark));
+}
+.fi-body .fi-simple-layout::before {
+  content: "";
+  position: absolute;
+  left: -4%;
+  right: -12%;
+  bottom: -16%;
+  height: 62%;
+  background: url("/images/deal-logo-cream.svg") no-repeat left bottom / contain;
+  opacity: .92;
+  pointer-events: none;
+}
+.fi-body .fi-simple-main {
+  position: relative;
+  border-radius: var(--radius-2xl);
+  box-shadow: 0 30px 80px -24px rgba(0, 0, 0, .5);
+}
+:root:not(.dark) .fi-body .fi-simple-main { background: var(--light); }
+.dark .fi-body .fi-simple-main { background: color-mix(in srgb, var(--dark) 70%, #0b0405); }
+.fi-body .fi-simple-layout-header .fi-icon-btn { color: var(--light); }
+.fi-body .fi-simple-main .fi-logo { color: var(--primary); }
+.dark .fi-body .fi-simple-main .fi-logo { color: var(--light); }

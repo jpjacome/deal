@@ -2,7 +2,7 @@
 
 @section('content')
     @php($pending = $booking->status === App\Enums\BookingStatus::Pending)
-    <section class="container section">
+    <div class="container">
         @if (session('booked'))
             <div class="notice">
                 @if ($pending)
@@ -20,14 +20,18 @@
             <div class="notice">Listo, actualizamos el horario{{ $pending ? '. Queda pendiente hasta que lo confirmemos' : '' }}. Te enviamos los nuevos datos por correo.</div>
         @endif
 
-        <h1>Reserva {{ $booking->code }}</h1>
+        <section class="bento">
+            <div class="tile gradient booking-hero span-12">
+                <span class="supergraphic supergraphic-wide" aria-hidden="true"><x-logo /></span>
+                <span class="badge">{{ $booking->status->getLabel() }}</span>
+                <p class="eyebrow">Reserva {{ $booking->code }}</p>
+                <h1>{{ $booking->space->name }}</h1>
+                <p class="booking-hero-when">{{ $booking->scheduleLabel() }}</p>
+            </div>
 
-        <div class="booking-layout">
-            <div class="card">
-                <p><span class="badge">{{ $booking->status->getLabel() }}</span></p>
+            <div class="tile span-7">
+                <p class="eyebrow">Detalles</p>
                 <dl class="details">
-                    <dt>Espacio</dt>
-                    <dd>{{ $booking->space->name }}</dd>
                     <dt>Fecha</dt>
                     <dd>{{ ucfirst($booking->starts_at->translatedFormat('l j \d\e F \d\e Y')) }}</dd>
                     <dt>Horario</dt>
@@ -42,7 +46,7 @@
                     @endif
                     <dt>A nombre de</dt>
                     <dd>{{ $booking->customer->name }}</dd>
-                    @if ($booking->status_reason && ! in_array($booking->status_reason, ['Cancelada por el cliente.'], true))
+                    @if ($booking->status_reason && ! str_starts_with($booking->status_reason, 'Cancelada por el cliente'))
                         <dt>Nota</dt>
                         <dd>{{ $booking->status_reason }}</dd>
                     @endif
@@ -69,35 +73,33 @@
             </div>
 
             @if ($isActive)
-                <div class="card">
-                    <h2>Cómo llegar</h2>
-                    <p>{{ $settings['venue_address'] }}</p>
+                <div class="tile span-5">
+                    <p class="eyebrow">Cómo llegar</p>
+                    <p><strong>{{ $settings['venue_address'] }}</strong></p>
                     @if ($settings['maps_url'])
-                        <p><a href="{{ $settings['maps_url'] }}" target="_blank" rel="noopener">Abrir en Google Maps</a></p>
+                        <p><a href="{{ $settings['maps_url'] }}" target="_blank" rel="noopener">Abrir en Google Maps →</a></p>
                     @endif
                     @if ($settings['arrival_info'])
                         <p class="muted" style="white-space: pre-line;">{{ $settings['arrival_info'] }}</p>
                     @endif
-
                     <p class="calendar-links">
-                        <a href="{{ $calendarUrl }}" target="_blank" rel="noopener">Google Calendar</a> ·
-                        <a href="{{ route('bookings.calendar', $booking->manage_token) }}">Apple / Outlook (.ics)</a>
+                        Agregar a <a href="{{ $calendarUrl }}" target="_blank" rel="noopener">Google Calendar</a> ·
+                        <a href="{{ route('bookings.calendar', $booking->manage_token) }}">Apple / Outlook</a>
                     </p>
-
                     @if ($whatsappUrl)
-                        <p><a href="{{ $whatsappUrl }}" target="_blank" rel="noopener" class="btn-secondary btn">Escríbenos por WhatsApp</a></p>
+                        <a href="{{ $whatsappUrl }}" target="_blank" rel="noopener" class="btn btn-secondary">Escríbenos por WhatsApp</a>
                     @endif
                 </div>
             @endif
 
             @if ($checkInQr)
-                <div class="card checkin">
-                    <h2>Al llegar</h2>
-                    <p class="muted">Muestra este código en recepción.</p>
+                <div class="tile tile-dark checkin span-12">
+                    <p class="eyebrow">Al llegar</p>
+                    <p>Muestra este código en recepción.</p>
                     <div class="qr">{!! $checkInQr !!}</div>
                     <p class="checkin-code">{{ $booking->code }}</p>
                 </div>
             @endif
-        </div>
-    </section>
+        </section>
+    </div>
 @endsection

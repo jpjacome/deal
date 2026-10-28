@@ -1,31 +1,13 @@
 <form wire:submit="book" class="booking" novalidate>
     {{-- 1. Space --}}
-    <fieldset class="step">
-        <legend><span class="step-number">1</span> Elige tu espacio</legend>
+    <fieldset class="step tile">
+        <legend><span class="step-number bubble">1</span> Elige tu espacio</legend>
 
         <div class="space-grid" role="radiogroup" aria-label="Espacio">
             @forelse ($this->spaces as $option)
                 <label @class(['space-card', 'is-selected' => $spaceSlug === $option->slug]) wire:key="space-{{ $option->id }}">
                     <input type="radio" wire:model.live="spaceSlug" value="{{ $option->slug }}">
-                    @if ($option->photoUrl())
-                        <img src="{{ $option->photoUrl() }}" alt="" loading="lazy">
-                    @endif
-                    <span class="space-card-body">
-                        <strong>{{ $option->name }}</strong>
-                        <span class="muted">{{ $option->booking_mode->getLabel() }} · hasta {{ $option->capacity }} {{ $option->capacity === 1 ? 'persona' : 'personas' }}</span>
-                        @if ($option->price !== null)
-                            <span>${{ rtrim(rtrim(number_format((float) $option->price, 2), '0'), '.') }} {{ $option->priceUnitLabel() }}</span>
-                        @elseif ($option->price_label)
-                            <span>{{ $option->price_label }}</span>
-                        @endif
-                        @if ($option->amenities)
-                            <span class="amenities">
-                                @foreach (array_slice($option->amenities, 0, 4) as $amenity)
-                                    <span>{{ $amenity }}</span>
-                                @endforeach
-                            </span>
-                        @endif
-                    </span>
+                    <x-space-card :space="$option" />
                 </label>
             @empty
                 <p>No hay espacios disponibles para reservar en línea por ahora.</p>
@@ -42,8 +24,8 @@
 
         {{-- 4. Contact details --}}
         @if ($this->selection)
-            <fieldset class="step" x-data="bookingDetails">
-                <legend><span class="step-number">4</span> Tus datos</legend>
+            <fieldset class="step tile" x-data="bookingDetails">
+                <legend><span class="step-number bubble">4</span> Tus datos</legend>
 
                 <div class="summary">
                     <strong>{{ $this->space->name }}</strong><br>
@@ -51,7 +33,7 @@
                     {{ $this->selection[0]->format('H:i') }} – {{ $this->selection[1]->format('H:i') }}
                     @if ($attendees > 1) · {{ $attendees }} personas @endif
                     @if ($this->estimatedPrice !== null)
-                        <br>Total estimado: <strong>${{ number_format($this->estimatedPrice, 2) }}</strong> <span class="muted">· se paga en el local</span>
+                        <br><span class="total">${{ number_format($this->estimatedPrice, 2) }}</span> <span class="muted">total estimado · se paga en el local</span>
                     @endif
                 </div>
 

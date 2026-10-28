@@ -11,6 +11,7 @@
     @vite(['resources/css/app.css'])
 </head>
 <body class="screen gradient">
+    <span class="supergraphic supergraphic-footer supergraphic-soft" aria-hidden="true"><x-logo /></span>
     <header class="screen-header">
         <span class="logo"><x-logo /></span>
         <div class="screen-clock">
@@ -22,6 +23,7 @@
     <main class="screen-grid">
         @foreach ($spaces as $row)
             <section class="screen-card">
+                <p class="eyebrow">{{ $row['space']->type_label ?: 'Espacio' }}</p>
                 <h2>{{ $row['space']->name }}</h2>
                 @if ($row['current'])
                     <p class="screen-state is-busy">Ocupado hasta las {{ $row['current']->ends_at->format('H:i') }}</p>

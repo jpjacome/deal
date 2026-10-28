@@ -12,8 +12,8 @@
 @endphp
 
 {{-- Day --}}
-<fieldset class="step">
-    <legend><span class="step-number">{{ $stepOffset + 1 }}</span> Elige el día</legend>
+<fieldset class="step tile">
+    <legend><span class="step-number bubble">{{ $stepOffset + 1 }}</span> Elige el día</legend>
 
     @if ($space->booking_mode === App\Enums\BookingMode::Hourly && count($this->durations) > 1)
         <p class="muted">¿Cuánto tiempo?</p>
@@ -68,8 +68,8 @@
 
 {{-- Time --}}
 @if ($this->day)
-    <fieldset class="step">
-        <legend><span class="step-number">{{ $stepOffset + 2 }}</span> Elige el horario</legend>
+    <fieldset class="step tile">
+        <legend><span class="step-number bubble">{{ $stepOffset + 2 }}</span> Elige el horario</legend>
 
         @if ($space->booking_mode->isFullDay())
             @if ($this->dayOptions === [])
@@ -125,7 +125,7 @@
         @endif
 
         @if ($allowWaitlist && ! $this->selection && ($this->dayOptions !== [] || $this->timeSlots !== []) && ! ($space->booking_mode === App\Enums\BookingMode::Hourly && $this->hasFreeSlot))
-            <div class="waitlist card">
+            <div class="waitlist">
                 @if ($joinedWaitlist)
                     <p><strong>¡Listo!</strong> Te escribiremos si se libera un espacio ese día.</p>
                 @else

@@ -33,6 +33,7 @@ class BookingStats extends StatsOverviewWidget
 
         return [
             Stat::make('Pendientes de confirmar', $pending)
+                ->extraAttributes(['class' => 'deal-stat-highlight'])
                 ->color($pending > 0 ? 'warning' : 'gray')
                 ->description($pending > 0 ? 'Revisar ahora' : 'Todo al día')
                 ->url(BookingResource::getUrl('index', ['tab' => 'pending'])),

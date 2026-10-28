@@ -1,10 +1,13 @@
 @extends('layouts.app', ['title' => 'Reservar'])
 
 @section('content')
-    <section class="container section">
-        <h1>Reserva tu espacio</h1>
-        <p class="muted">Elige el espacio, la fecha y el horario. Recibirás la confirmación por correo.</p>
+    <div class="container">
+        <div class="page-intro">
+            <p class="eyebrow">Reservar</p>
+            <h1>Reserva tu espacio</h1>
+            <p class="muted">Elige el espacio, el día y el horario. Te confirmamos por correo.</p>
+        </div>
 
         <livewire:booking-form />
-    </section>
+    </div>
 @endsection

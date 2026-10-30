@@ -58,7 +58,7 @@ class AdminToolsTest extends TestCase
             ->fillForm([
                 'venue_address' => 'Calle Larga 1-23, Cuenca',
                 'whatsapp_number' => '099 123 4567',
-                'notify_emails' => ['equipo@deal.ec'],
+                'notify_emails' => [['email' => 'equipo@deal.ec']],
                 'privacy_policy' => 'Nueva política',
             ])
             ->call('save')
@@ -86,10 +86,21 @@ class AdminToolsTest extends TestCase
             ->assertHasFormErrors(['phone']);
 
         Livewire::test(Settings::class)
-            ->fillForm(['notify_whatsapp' => ['099 111 2233', '+1 305 555 0134']])
+            ->fillForm(['notify_whatsapp' => [['number' => '099 111 2233'], ['number' => '+1 305 555 0134']]])
             ->call('save')
             ->assertHasNoFormErrors();
         $this->assertSame(['+593991112233', '+13055550134'], Setting::get('notify_whatsapp'));
+    }
+
+    public function test_team_email_list_is_cleaned_and_test_email_is_sent(): void
+    {
+        Livewire::test(Settings::class)
+            ->fillForm(['notify_emails' => [['email' => 'Equipo@Deal.ec'], ['email' => 'socios@deal.ec'], ['email' => 'equipo@deal.ec'], ['email' => '']]])
+            ->call('sendTestEmail')
+            ->assertHasNoFormErrors()
+            ->assertNotified('Correo de prueba enviado');
+
+        $this->assertSame(['equipo@deal.ec', 'socios@deal.ec'], Setting::get('notify_emails'));
     }
 
     public function test_only_admins_see_settings(): void

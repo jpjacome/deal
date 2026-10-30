@@ -7,9 +7,10 @@ use App\Models\Setting;
 use App\Rules\ValidPhoneNumber;
 use App\Support\PhoneNumber;
 use BackedEnum;
+use Closure;
 use Filament\Actions\Action;
 use Filament\Forms\Components\MarkdownEditor;
-use Filament\Forms\Components\TagsInput;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
@@ -21,6 +22,7 @@ use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Components\Text;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use UnitEnum;
 
@@ -80,19 +82,48 @@ class Settings extends Page
                             ]),
                     ]),
                     Tab::make('Avisos')->icon(Heroicon::OutlinedBellAlert)->schema([
-                        Section::make('Avisos al equipo')
-                            ->description('Quién recibe las reservas nuevas, cancelaciones, pendientes y la agenda diaria. Si no hay correos, se avisa a los administradores.')
+                        Section::make('Correos del equipo')
+                            ->icon(Heroicon::OutlinedEnvelope)
+                            ->description('Cada persona de esta lista recibe por correo: reservas nuevas, cancelaciones de clientes, solicitudes pendientes y la agenda de cada mañana. Si la lista está vacía, se avisa a los administradores del panel.')
                             ->schema([
-                                TagsInput::make('notify_emails')->label('Correos')->placeholder('reservas@deal.ec')->nestedRecursiveRules(['email']),
-                                TagsInput::make('notify_whatsapp')
-                                    ->label('Números de WhatsApp')
-                                    ->placeholder(PhoneField::EXAMPLE)
-                                    ->helperText('Con código de país (sin él se asume Ecuador). Requiere la API de WhatsApp activa.')
-                                    ->nestedRecursiveRules([new ValidPhoneNumber])
-                                    ->dehydrateStateUsing(fn (?array $state): array => array_values(array_map(
-                                        fn (string $number): string => PhoneNumber::normalize($number) ?? $number,
-                                        $state ?? [],
-                                    ))),
+                                Repeater::make('notify_emails')
+                                    ->hiddenLabel()
+                                    ->simple(
+                                        TextInput::make('email')
+                                            ->email()
+                                            ->placeholder('reservas@deal.ec')
+                                            ->validationAttribute('correo'),
+                                    )
+                                    ->addActionLabel('Agregar correo')
+                                    ->addAction(fn (Action $action): Action => $action->icon(Heroicon::OutlinedPlus))
+                                    ->reorderable(false)
+                                    ->defaultItems(0),
+                                Actions::make([
+                                    Action::make('sendTestEmail')
+                                        ->label('Guardar y enviar correo de prueba')
+                                        ->icon(Heroicon::OutlinedPaperAirplane)
+                                        ->color('gray')
+                                        ->action(fn () => $this->sendTestEmail()),
+                                ]),
+                            ]),
+                        Section::make('WhatsApp del equipo')
+                            ->icon(Heroicon::OutlinedChatBubbleLeftRight)
+                            ->description('Estos números reciben un WhatsApp con cada reserva nueva y cada cancelación de un cliente. Solo funciona cuando la API de WhatsApp de Deal esté activa.')
+                            ->schema([
+                                Repeater::make('notify_whatsapp')
+                                    ->hiddenLabel()
+                                    ->simple(
+                                        TextInput::make('number')
+                                            ->tel()
+                                            ->placeholder(PhoneField::EXAMPLE)
+                                            ->rule(new ValidPhoneNumber)
+                                            ->validationAttribute('número'),
+                                    )
+                                    ->addActionLabel('Agregar número')
+                                    ->addAction(fn (Action $action): Action => $action->icon(Heroicon::OutlinedPlus))
+                                    ->reorderable(false)
+                                    ->defaultItems(0)
+                                    ->helperText('Con código de país; si no lo pones, se asume Ecuador (+593).'),
                             ]),
                     ]),
                     Tab::make('Reglas')->icon(Heroicon::OutlinedAdjustmentsHorizontal)->schema([
@@ -168,12 +199,57 @@ class Settings extends Page
     {
         $values = $this->form->getState();
 
+        // Clean lists: no blanks or duplicates; emails lowercased, phones in full international format.
+        $values['notify_emails'] = $this->cleanList($values['notify_emails'] ?? [], fn (string $email): string => Str::lower($email));
+        $values['notify_whatsapp'] = $this->cleanList($values['notify_whatsapp'] ?? [], fn (string $number): string => PhoneNumber::normalize($number) ?? $number);
+
         if (($values['privacy_policy'] ?? null) !== Setting::get('privacy_policy')) {
             $values['privacy_version'] = now()->format('Y-m-d H:i');
         }
 
         Setting::put(collect($values)->only(array_keys(Setting::DEFAULTS))->all());
 
+        // Show the cleaned lists back in the form.
+        $this->form->fill(Setting::values());
+
         Notification::make()->success()->title('Ajustes guardados')->send();
+    }
+
+    /**
+     * Save, then email every team address so the owner can check the alerts arrive.
+     */
+    public function sendTestEmail(): void
+    {
+        $this->save();
+
+        $emails = (array) Setting::get('notify_emails');
+
+        if ($emails === []) {
+            Notification::make()->warning()->title('Agrega al menos un correo para enviar la prueba')->send();
+
+            return;
+        }
+
+        Mail::raw(
+            "Hola,\n\nEste es un correo de prueba de ".config('app.name').'. Si lo recibes, los avisos de reservas te llegarán a esta dirección.',
+            fn ($message) => $message->to($emails)->subject('Prueba de avisos · '.config('app.name')),
+        );
+
+        Notification::make()->success()->title('Correo de prueba enviado')->body(implode(', ', $emails))->send();
+    }
+
+    /**
+     * @param  array<int|string, mixed>  $items
+     * @return list<string>
+     */
+    private function cleanList(array $items, Closure $normalize): array
+    {
+        return collect($items)
+            ->map(fn ($item): string => trim((string) $item))
+            ->filter()
+            ->map($normalize)
+            ->unique()
+            ->values()
+            ->all();
     }
 }

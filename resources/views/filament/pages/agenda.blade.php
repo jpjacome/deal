@@ -2,8 +2,6 @@
     @php
         $current = $this->current();
         $bookingUrl = fn ($booking) => \App\Filament\Resources\Bookings\BookingResource::getUrl('view', ['record' => $booking]);
-        $colors = ['pending' => 'rgba(245, 158, 11, .18)', 'confirmed' => 'rgba(155, 28, 25, .14)'];
-        $borders = ['pending' => '#d97706', 'confirmed' => '#9b1c19'];
     @endphp
 
     <div style="display: flex; flex-wrap: wrap; gap: .75rem; align-items: center; justify-content: space-between;">
@@ -59,12 +57,12 @@
                     </div>
 
                     @foreach ($timeline['columns'] as $column)
-                        <div style="position: relative; height: {{ $height }}px; border-left: 1px solid rgba(127,127,127,.2);">
+                        <div style="position: relative; height: {{ $height }}px; border-left: 1px solid color-mix(in srgb, currentColor 15%, transparent);">
                             {{-- Empty hours: click to book --}}
                             @for ($h = $timeline['from']; $h < $timeline['to']; $h++)
                                 <a href="{{ route('filament.admin.resources.bookings.create', ['space' => $column['space']->id, 'date' => $current->toDateString(), 'start' => sprintf('%02d:00', $h)]) }}"
                                    title="Reservar {{ $column['space']->name }} a las {{ sprintf('%02d:00', $h) }}"
-                                   style="position: absolute; left: 0; right: 0; top: {{ ($h - $timeline['from']) * $hourHeight }}px; height: {{ $hourHeight }}px; border-top: 1px solid rgba(127,127,127,.15);"></a>
+                                   style="position: absolute; left: 0; right: 0; top: {{ ($h - $timeline['from']) * $hourHeight }}px; height: {{ $hourHeight }}px; border-top: 1px solid color-mix(in srgb, currentColor 10%, transparent);"></a>
                             @endfor
 
                             @foreach ($column['bookings'] as $booking)
@@ -73,7 +71,8 @@
                                     $blockHeight = max(22, $booking->starts_at->diffInMinutes($booking->ends_at) / 60 * $hourHeight - 2);
                                 @endphp
                                 <a href="{{ $bookingUrl($booking) }}"
-                                   style="position: absolute; left: 4px; right: 4px; top: {{ $top }}px; height: {{ $blockHeight }}px; overflow: hidden; padding: .25rem .4rem; border-radius: .4rem; font-size: .8rem; line-height: 1.25; text-decoration: none; background: {{ $colors[$booking->status->value] ?? 'rgba(127,127,127,.15)' }}; border-left: 3px solid {{ $borders[$booking->status->value] ?? '#888' }};">
+                                   class="deal-slot deal-slot-{{ $booking->status->value }}"
+                                   style="top: {{ $top }}px; height: {{ $blockHeight }}px;">
                                     <strong>{{ $booking->starts_at->format('H:i') }}–{{ $booking->ends_at->format('H:i') }}</strong>
                                     @if ($booking->status->value === 'pending') · <em>Pendiente</em> @endif
                                     <br>{{ $booking->customer->name }}@if ($booking->attendees > 1) · {{ $booking->attendees }} pers.@endif
@@ -99,7 +98,7 @@
                     <div style="display: flex; flex-direction: column; gap: .5rem;">
                         @forelse ($day['bookings'] as $booking)
                             <a href="{{ $bookingUrl($booking) }}"
-                               style="display: block; padding: .5rem; border-radius: .5rem; border: 1px solid rgba(127,127,127,.25); text-decoration: none;">
+                               style="display: block; padding: .5rem; border-radius: .5rem; border: 1px solid color-mix(in srgb, currentColor 18%, transparent); text-decoration: none;">
                                 <div style="display: flex; justify-content: space-between; gap: .25rem; align-items: center;">
                                     <strong>{{ $booking->starts_at->format('H:i') }}–{{ $booking->ends_at->format('H:i') }}</strong>
                                     <x-filament::badge :color="$booking->status->getColor()" size="sm">

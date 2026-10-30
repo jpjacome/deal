@@ -41,23 +41,41 @@ class AdminPanelProvider extends PanelProvider
             ->brandLogo(fn () => view('components.logo'))
             ->brandLogoHeight('2rem')
             ->favicon(asset('favicon.svg'))
+            // Palette from the brand moodboard only: orange → dark red gradient, cream, gray, white. No black:
+            // the gray scale ends in dark red, which also makes dark mode a deep wine instead of black.
             ->colors([
-                // Hand-tuned so 600 (buttons, links) is the brand red #971c1a; Color::hex() would lighten it.
-                'primary' => [
-                    50 => 'oklch(0.977 0.014 27.4)',
-                    100 => 'oklch(0.950 0.033 27.4)',
-                    200 => 'oklch(0.905 0.063 27.4)',
-                    300 => 'oklch(0.820 0.110 27.4)',
-                    400 => 'oklch(0.700 0.160 27.4)',
-                    500 => 'oklch(0.580 0.180 27.4)',
-                    600 => 'oklch(0.457 0.161 27.4)',
-                    700 => 'oklch(0.395 0.140 27.4)',
-                    800 => 'oklch(0.335 0.115 23)',
-                    900 => 'oklch(0.280 0.090 20)',
-                    950 => 'oklch(0.200 0.065 20)',
+                // Cream tints → orange #dd572f (400) → red (500) → dark red #4a0e14 (600, buttons and links).
+                'primary' => $brand = [
+                    50 => 'oklch(0.973 0.011 45.7)',
+                    100 => 'oklch(0.935 0.029 45.0)',
+                    200 => 'oklch(0.859 0.062 42.2)',
+                    300 => 'oklch(0.757 0.111 41.6)',
+                    400 => 'oklch(0.626 0.176 36.9)',
+                    500 => 'oklch(0.450 0.131 31.1)',
+                    600 => 'oklch(0.274 0.089 20.1)',
+                    700 => 'oklch(0.243 0.077 19.7)',
+                    800 => 'oklch(0.219 0.067 18.0)',
+                    900 => 'oklch(0.196 0.058 17.4)',
+                    950 => 'oklch(0.174 0.051 12.4)',
                 ],
-                'gray' => Color::Stone,
-                'warning' => Color::Orange,
+                // White → gray #e4e2df (200) → dark red #4a0e14 (900).
+                'gray' => $gray = [
+                    50 => 'oklch(0.979 0.001 106.4)',
+                    100 => 'oklch(0.943 0.003 84.6)',
+                    200 => 'oklch(0.914 0.005 78.3)',
+                    300 => 'oklch(0.818 0.015 33.1)',
+                    400 => 'oklch(0.669 0.035 22.7)',
+                    500 => 'oklch(0.562 0.049 22.2)',
+                    600 => 'oklch(0.465 0.063 21.1)',
+                    700 => 'oklch(0.382 0.075 20.0)',
+                    800 => 'oklch(0.318 0.083 20.0)',
+                    900 => 'oklch(0.274 0.089 20.1)',
+                    950 => 'oklch(0.243 0.077 19.7)',
+                ],
+                'success' => $brand,
+                'info' => $gray,
+                'warning' => $orange = Color::hex('#dd572f'),
+                'danger' => $orange,
             ])
             // Fonts are self-hosted by Vite (@fonts); the brand skin lives in resources/css/admin.css.
             ->font('Inter', provider: LocalFontProvider::class)

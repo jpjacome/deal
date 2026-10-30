@@ -4,7 +4,7 @@
         $totals = $report->totals();
         $heatmap = $report->heatmap();
         $weekdays = \App\Models\OpeningHour::WEEKDAYS;
-        $stat = 'padding: 1rem; border-radius: .75rem; border: 1px solid rgba(127,127,127,.2);';
+        $stat = 'padding: 1rem; border-radius: 1.25rem; border: 1px solid color-mix(in srgb, currentColor 15%, transparent);';
     @endphp
 
     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: .75rem;">
@@ -33,8 +33,8 @@
                         <span>{{ $row['space']->name }}</span>
                         <span><strong>{{ $row['percent'] }}%</strong> · {{ $row['booked_hours'] }} h</span>
                     </div>
-                    <div style="height: .6rem; border-radius: 1rem; background: rgba(127,127,127,.15); overflow: hidden;">
-                        <div style="height: 100%; width: {{ $row['percent'] }}%; background: #9b1c19;"></div>
+                    <div style="height: .6rem; border-radius: 1rem; background: color-mix(in srgb, currentColor 12%, transparent); overflow: hidden;">
+                        <div class="deal-bar" style="width: {{ $row['percent'] }}%;"></div>
                     </div>
                 </div>
             @endforeach
@@ -54,7 +54,7 @@
                     <tr>
                         <th style="text-align: right; font-weight: 400; padding-right: .4rem;">{{ mb_substr($weekdays[$weekday], 0, 3) }}</th>
                         @foreach ($cells as $count)
-                            <td title="{{ $count }} reservas" style="width: 2rem; height: 1.6rem; text-align: center; border-radius: .3rem; background: rgba(155, 28, 25, {{ $count ? 0.12 + 0.88 * $count / $heatmap['max'] : 0.04 }}); color: {{ $count / $heatmap['max'] > .55 ? '#fff' : 'inherit' }};">
+                            <td title="{{ $count }} reservas" style="width: 2rem; height: 1.6rem; text-align: center; border-radius: .3rem; background: color-mix(in srgb, var(--accent) {{ $count ? round(12 + 88 * $count / $heatmap['max']) : 5 }}%, transparent); color: {{ $count / $heatmap['max'] > .55 ? 'var(--white)' : 'inherit' }};">
                                 {{ $count ?: '' }}
                             </td>
                         @endforeach
@@ -66,9 +66,9 @@
 
     <x-filament::section heading="Clientes más frecuentes">
         @forelse ($report->topCustomers() as $customer)
-            <div style="display: flex; justify-content: space-between; padding: .4rem 0; border-bottom: 1px solid rgba(127,127,127,.12);">
+            <div style="display: flex; justify-content: space-between; padding: .4rem 0; border-bottom: 1px solid color-mix(in srgb, currentColor 12%, transparent);">
                 <span>{{ $customer['name'] }}@if ($customer['company']) <span style="opacity: .6;">· {{ $customer['company'] }}</span>@endif</span>
-                <span>{{ $customer['visits'] }} visitas @if ($customer['no_shows']) · <span style="color: #b91c1c;">{{ $customer['no_shows'] }} inasist.</span>@endif</span>
+                <span>{{ $customer['visits'] }} visitas @if ($customer['no_shows']) · <span class="deal-warning-text">{{ $customer['no_shows'] }} inasist.</span>@endif</span>
             </div>
         @empty
             <p style="opacity: .6;">Todavía no hay datos en este periodo.</p>

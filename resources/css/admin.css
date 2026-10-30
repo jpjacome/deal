@@ -1,14 +1,17 @@
-/* Deal — admin panel skin. Plain CSS layered over Filament's own styles (no Tailwind build),
-   using the same brand variables as app.css. Selectors are prefixed with .fi-body so they win
-   over Filament's equally specific rules regardless of load order. */
+/* Deal — admin panel skin. Plain CSS layered over Filament's own styles (no Tailwind build), using the
+   same five brand colors as app.css: orange → dark red gradient, cream, gray, white. No black.
+   Light theme: gray page, white cards. Dark theme: deep dark red page and cards (from the gray scale
+   set in AdminPanelProvider), cream accents. Selectors are prefixed with .fi-body so they win over
+   Filament's equally specific rules regardless of load order. */
 
 :root {
-  --primary: #971c1a;
   --accent: #dd572f;
-  --dark: #4a0e14;
+  --primary: #4a0e14;
   --light: #f5eace;
-  --surface: #ebe6df;
+  --surface: #e4e2df;
+  --white: #ffffff;
 
+  --gradient: linear-gradient(180deg in oklch, var(--accent), var(--primary));
   --font-heading: "Outfit", "Inter", system-ui, sans-serif;
 
   /* Filament design tokens */
@@ -17,10 +20,17 @@
   --radius-2xl: 28px;
 }
 
-/* Light mode: stone page, cards in a softened cream */
-:root:not(.dark) { --color-white: color-mix(in srgb, var(--light) 32%, #fff); }
-:root:not(.dark) .fi-body { background: var(--surface); }
-.dark .fi-body { background: color-mix(in srgb, var(--dark) 30%, #0b0405); }
+/* Dark theme: the brand's dark red is also the page color, so solid buttons, toggles and checkboxes
+   step up one shade (vivid red, orange on hover) to stay visible. Same palette, just shifted. */
+.dark {
+  --primary-600: oklch(0.450 0.131 31.1);
+  --primary-500: oklch(0.626 0.176 36.9);
+  --success-600: oklch(0.450 0.131 31.1);
+  --success-500: oklch(0.626 0.176 36.9);
+}
+
+/* Pages */
+:root:not(.dark) .fi-body { background: var(--surface); color: var(--primary); }
 
 /* Typography */
 .fi-body .fi-header-heading { font-family: var(--font-heading); font-weight: 400; letter-spacing: -0.025em; }
@@ -29,18 +39,18 @@
 .fi-body .fi-simple-header-heading,
 .fi-body .fi-ta-header-heading { font-family: var(--font-heading); font-weight: 500; letter-spacing: -0.01em; }
 
-/* Sidebar: wine, like the business cards */
+/* Sidebar: the brand gradient, orange at the top fading to dark red (same in both themes) */
 .fi-body .fi-sidebar {
-  background: linear-gradient(180deg, color-mix(in srgb, var(--dark) 88%, var(--primary)), var(--dark) 55%, color-mix(in srgb, var(--dark) 78%, #000));
+  background: linear-gradient(180deg in oklch, var(--accent) 0%, var(--primary) 38%, var(--primary) 100%);
   color: var(--light);
   box-shadow: none;
   border: 0;
 }
 .fi-body .fi-sidebar-header { background: transparent; box-shadow: none; border: 0; color: var(--light); }
-.fi-body .fi-sidebar-header .fi-icon-btn { color: color-mix(in srgb, var(--light) 70%, transparent); }
+.fi-body .fi-sidebar-header .fi-icon-btn { color: color-mix(in srgb, var(--light) 75%, transparent); }
 .fi-body .fi-sidebar-group-label,
 .fi-body .fi-sidebar-group-btn .fi-icon {
-  color: color-mix(in srgb, var(--light) 55%, transparent);
+  color: color-mix(in srgb, var(--light) 62%, transparent);
 }
 .fi-body .fi-sidebar-group-label {
   font-family: var(--font-heading);
@@ -51,42 +61,56 @@
 }
 .fi-body .fi-sidebar-item-btn { border-radius: 999px; }
 .fi-body .fi-sidebar-item-btn,
-.fi-body .fi-sidebar-item-btn .fi-sidebar-item-label { color: color-mix(in srgb, var(--light) 88%, transparent); }
-.fi-body .fi-sidebar-item-btn > .fi-icon { color: color-mix(in srgb, var(--light) 60%, transparent); }
+.fi-body .fi-sidebar-item-btn .fi-sidebar-item-label { color: color-mix(in srgb, var(--light) 90%, transparent); }
+.fi-body .fi-sidebar-item-btn > .fi-icon { color: color-mix(in srgb, var(--light) 65%, transparent); }
 .fi-body .fi-sidebar-item-btn:hover,
-.fi-body .fi-sidebar-item-btn:focus-visible { background: color-mix(in srgb, var(--light) 10%, transparent); }
+.fi-body .fi-sidebar-item-btn:focus-visible { background: color-mix(in srgb, var(--light) 12%, transparent); }
 .fi-body .fi-sidebar-item.fi-active > .fi-sidebar-item-btn { background: var(--light); }
 .fi-body .fi-sidebar-item.fi-active > .fi-sidebar-item-btn .fi-sidebar-item-label,
-.fi-body .fi-sidebar-item.fi-active > .fi-sidebar-item-btn > .fi-icon { color: var(--dark); }
+.fi-body .fi-sidebar-item.fi-active > .fi-sidebar-item-btn > .fi-icon { color: var(--primary); }
+.fi-body .fi-sidebar .fi-badge { background: var(--light); color: var(--primary); box-shadow: none; }
+.fi-body .fi-sidebar-item.fi-active .fi-badge { background: var(--primary); color: var(--light); }
 .fi-body .fi-sidebar-footer,
-.fi-body .fi-sidebar-database-notifications-btn { color: color-mix(in srgb, var(--light) 88%, transparent); }
+.fi-body .fi-sidebar-database-notifications-btn { color: color-mix(in srgb, var(--light) 90%, transparent); }
 
 /* Top bar blends into the page */
-.fi-body .fi-topbar { box-shadow: none; background: color-mix(in srgb, var(--surface) 85%, transparent); backdrop-filter: blur(10px); }
-.dark .fi-body .fi-topbar { background: color-mix(in srgb, var(--dark) 25%, #0b0405); }
+.fi-body .fi-topbar { box-shadow: none; backdrop-filter: blur(10px); }
+:root:not(.dark) .fi-body .fi-topbar { background: color-mix(in srgb, var(--surface) 85%, transparent); }
 :root:not(.dark) .fi-body .fi-topbar .fi-logo { color: var(--primary); }
+.dark .fi-body .fi-topbar .fi-logo { color: var(--light); }
 
 /* Rounder, softer surfaces */
 .fi-body .fi-section:not(.fi-section-not-contained),
 .fi-body .fi-ta-ctn,
-.fi-body .fi-wi-stats-overview-stat { border-radius: var(--radius-2xl); box-shadow: 0 1px 0 rgba(74, 14, 20, .06); }
+.fi-body .fi-wi-stats-overview-stat { border-radius: var(--radius-2xl); box-shadow: 0 1px 0 color-mix(in srgb, var(--primary) 6%, transparent); }
 .fi-body .fi-btn,
 .fi-body .fi-tabs { border-radius: 999px; }
 .fi-body .fi-badge { border-radius: 999px 999px 999px 4px; } /* speech bubble */
 
-/* Dashboard: the "pending" stat as a brand gradient tile */
-.fi-body .fi-wi-stats-overview-stat.deal-stat-highlight { background: linear-gradient(160deg, var(--accent), var(--primary) 55%, var(--dark)); }
+/* Dashboard: the "pending" stat as a gradient tile */
+.fi-body .fi-wi-stats-overview-stat.deal-stat-highlight { background: linear-gradient(160deg in oklch, var(--accent), var(--primary)); }
 .fi-body .deal-stat-highlight .fi-wi-stats-overview-stat-label,
 .fi-body .deal-stat-highlight .fi-wi-stats-overview-stat-value,
 .fi-body .deal-stat-highlight .fi-wi-stats-overview-stat-description,
 .fi-body .deal-stat-highlight .fi-icon { color: var(--light); }
 .fi-body .fi-wi-stats-overview-stat-value { font-family: var(--font-heading); font-weight: 400; letter-spacing: -0.02em; }
 
-/* Login & password reset: gradient with the oversized cream wordmark */
+/* Agenda timeline blocks: pending in orange, confirmed in dark red (cream in the dark theme) */
+.deal-slot { position: absolute; left: 4px; right: 4px; overflow: hidden; padding: .25rem .4rem; border-radius: .5rem; font-size: .8rem; line-height: 1.25; text-decoration: none; border-left: 3px solid; }
+.deal-slot-pending { background: color-mix(in srgb, var(--accent) 16%, transparent); border-color: var(--accent); }
+.deal-slot-confirmed { background: color-mix(in srgb, var(--primary) 10%, transparent); border-color: var(--primary); }
+.dark .deal-slot-confirmed { background: color-mix(in srgb, var(--light) 14%, transparent); border-color: var(--light); }
+
+/* Reportes */
+.deal-bar { height: 100%; background: linear-gradient(90deg in oklch, var(--accent), var(--primary)); }
+.dark .deal-bar { background: linear-gradient(90deg in oklch, var(--accent), var(--light)); }
+.deal-warning-text { color: var(--accent); }
+
+/* Login & password reset: the gradient with the oversized cream wordmark */
 .fi-body .fi-simple-layout {
   position: relative;
   overflow: hidden;
-  background: linear-gradient(180deg, var(--accent), var(--primary) 50%, var(--dark));
+  background: var(--gradient);
 }
 .fi-body .fi-simple-layout::before {
   content: "";
@@ -102,10 +126,9 @@
 .fi-body .fi-simple-main {
   position: relative;
   border-radius: var(--radius-2xl);
-  box-shadow: 0 30px 80px -24px rgba(0, 0, 0, .5);
+  box-shadow: 0 30px 80px -24px color-mix(in srgb, var(--primary) 70%, transparent);
 }
 :root:not(.dark) .fi-body .fi-simple-main { background: var(--light); }
-.dark .fi-body .fi-simple-main { background: color-mix(in srgb, var(--dark) 70%, #0b0405); }
 .fi-body .fi-simple-layout-header .fi-icon-btn { color: var(--light); }
-.fi-body .fi-simple-main .fi-logo { color: var(--primary); }
+:root:not(.dark) .fi-body .fi-simple-main .fi-logo { color: var(--primary); }
 .dark .fi-body .fi-simple-main .fi-logo { color: var(--light); }

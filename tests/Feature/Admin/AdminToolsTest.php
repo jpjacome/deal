@@ -18,6 +18,7 @@ use App\Models\Space;
 use App\Models\User;
 use App\Notifications\BookingCancelled;
 use App\Notifications\BookingRescheduled;
+use App\Services\BookingReports;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
@@ -219,6 +220,24 @@ class AdminToolsTest extends TestCase
         Livewire::test(Reports::class)
             ->callAction('exportCustomers')
             ->assertFileDownloaded('clientes-2026-11-02.csv');
+    }
+
+    public function test_reports_count_a_future_booking_the_moment_it_is_made(): void
+    {
+        $space = Space::factory()->create();
+        $this->wednesdayBooking(['space_id' => $space->id]); // made "now" (Monday), visit on Wednesday
+
+        $report = BookingReports::lastDays(30);
+        $totals = $report->totals();
+        $occupancy = collect($report->occupancy())->firstWhere('space.id', $space->id);
+
+        $this->assertSame(1, $totals['received']);
+        $this->assertSame(1, $totals['upcoming']);
+        $this->assertSame(0, $totals['completed']);
+        $this->assertSame(2.0, $occupancy['upcoming_hours']);
+        $this->assertSame(0.0, $occupancy['past_hours']);
+
+        Livewire::test(Reports::class)->assertSee('Reservas recibidas')->assertSee('Por venir');
     }
 
     public function test_calendar_feed_is_private(): void

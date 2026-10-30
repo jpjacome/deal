@@ -164,20 +164,49 @@ class Settings extends Page
                         Section::make('Pantalla de recepción')
                             ->description('Una página para un TV o tablet en recepción: la agenda de hoy por espacio y cuáles están libres ahora. Se actualiza sola cada minuto. El enlace es privado.')
                             ->schema([
-                                Text::make(fn (): string => filled(Setting::get('screen_token'))
-                                    ? route('screen', Setting::get('screen_token'))
-                                    : 'Todavía no está activada.')
-                                    ->copyable(fn (): bool => filled(Setting::get('screen_token'))),
+                                // Not active yet: one click to turn it on.
+                                Text::make('La pantalla todavía no está activada. Al activarla se crea un enlace privado para abrir en el TV o la tablet.')
+                                    ->visible(fn (): bool => ! $this->screenIsActive()),
                                 Actions::make([
-                                    Action::make('screenToken')
-                                        ->label(fn (): string => filled(Setting::get('screen_token')) ? 'Generar un enlace nuevo' : 'Activar pantalla')
-                                        ->requiresConfirmation(fn (): bool => filled(Setting::get('screen_token')))
-                                        ->modalDescription('El enlace anterior dejará de funcionar.')
-                                        ->action(function (): void {
-                                            Setting::put(['screen_token' => Str::random(40)]);
-                                            Notification::make()->success()->title('Enlace de pantalla listo')->send();
-                                        }),
-                                ]),
+                                    Action::make('activateScreen')
+                                        ->label('Activar pantalla')
+                                        ->icon(Heroicon::OutlinedTv)
+                                        ->action(fn () => $this->setScreenToken(Str::random(40), 'Pantalla activada')),
+                                ])->visible(fn (): bool => ! $this->screenIsActive()),
+
+                                // Active: the link, how to use it, and how to renew or turn it off.
+                                Text::make(fn (): string => $this->screenUrl() ?? '')
+                                    ->copyable()
+                                    ->copyMessage('Enlace copiado')
+                                    ->badge()
+                                    ->visible(fn (): bool => $this->screenIsActive()),
+                                Text::make('Abre este enlace en el navegador del TV o la tablet de recepción y ponlo en pantalla completa (tecla F11 en una computadora). No hace falta iniciar sesión.')
+                                    ->visible(fn (): bool => $this->screenIsActive()),
+                                Actions::make([
+                                    Action::make('openScreen')
+                                        ->label('Abrir pantalla')
+                                        ->icon(Heroicon::OutlinedArrowTopRightOnSquare)
+                                        ->url(fn (): ?string => $this->screenUrl(), shouldOpenInNewTab: true),
+                                    Action::make('renewScreen')
+                                        ->label('Generar enlace nuevo')
+                                        ->icon(Heroicon::OutlinedArrowPath)
+                                        ->color('gray')
+                                        ->requiresConfirmation()
+                                        ->modalHeading('¿Generar un enlace nuevo?')
+                                        ->modalDescription('El enlace actual dejará de funcionar y tendrás que abrir el nuevo en el TV o la tablet. Úsalo si el enlace llegó a alguien que no debía tenerlo.')
+                                        ->modalSubmitActionLabel('Generar enlace nuevo')
+                                        ->action(fn () => $this->setScreenToken(Str::random(40), 'Enlace nuevo listo')),
+                                    Action::make('deactivateScreen')
+                                        ->label('Desactivar')
+                                        ->icon(Heroicon::OutlinedNoSymbol)
+                                        ->color('danger')
+                                        ->link()
+                                        ->requiresConfirmation()
+                                        ->modalHeading('¿Desactivar la pantalla?')
+                                        ->modalDescription('El enlace dejará de funcionar. Puedes volver a activarla cuando quieras.')
+                                        ->modalSubmitActionLabel('Desactivar')
+                                        ->action(fn () => $this->setScreenToken(null, 'Pantalla desactivada')),
+                                ])->visible(fn (): bool => $this->screenIsActive()),
                             ]),
                     ]),
                     Tab::make('Legal')->icon(Heroicon::OutlinedShieldCheck)->schema([
@@ -213,6 +242,23 @@ class Settings extends Page
         $this->form->fill(Setting::values());
 
         Notification::make()->success()->title('Ajustes guardados')->send();
+    }
+
+    public function screenIsActive(): bool
+    {
+        return filled(Setting::get('screen_token'));
+    }
+
+    public function screenUrl(): ?string
+    {
+        return $this->screenIsActive() ? route('screen', Setting::get('screen_token')) : null;
+    }
+
+    private function setScreenToken(?string $token, string $message): void
+    {
+        Setting::put(['screen_token' => $token]);
+
+        Notification::make()->success()->title($message)->send();
     }
 
     /**

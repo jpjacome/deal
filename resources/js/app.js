@@ -1,5 +1,19 @@
 // Livewire's built-in "page expired" prompt is in English; show ours instead.
 document.addEventListener('livewire:init', () => {
+    // A booking attempt failed: bring the first error into view (it may be off-screen).
+    window.Livewire.on('booking-invalid', () => {
+        setTimeout(() => {
+            const error = document.querySelector('.booking .error');
+            if (! error) {
+                return;
+            }
+            error.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            const field = error.closest('.field')?.querySelector('input, select, textarea')
+                ?? error.previousElementSibling?.querySelector?.('input');
+            field?.focus({ preventScroll: true });
+        }, 80);
+    });
+
     let warned = false;
 
     window.Livewire.interceptRequest(({ onError }) => {

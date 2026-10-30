@@ -12,6 +12,7 @@ use App\Support\PhoneNumber;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Url;
@@ -118,33 +119,35 @@ class BookingForm extends Component
         $this->phone = PhoneNumber::normalize($this->phone, $this->countryCode) ?? $this->phone;
         $this->email = Str::lower(trim($this->email));
 
-        $this->validate([
-            'spaceSlug' => ['required'],
-            'date' => ['required', 'date_format:Y-m-d'],
-            'attendees' => ['required', 'integer', 'min:1', 'max:'.($this->space->capacity ?? 1)],
-            'name' => ['required', 'string', 'max:120'],
-            'email' => ['required', 'email', 'max:190'],
-            'phone' => ['required', 'regex:/^\+[1-9]\d{7,14}$/'],
-            'company' => ['nullable', 'string', 'max:120'],
-            'notes' => ['nullable', 'string', 'max:1000'],
-            'privacy' => ['accepted'],
-        ], [
-            'phone.regex' => 'Revisa el número de celular y el código de país.',
-            'privacy.accepted' => 'Debes aceptar la política de privacidad y las condiciones para reservar.',
-        ]);
+        try {
+            $this->validate([
+                'spaceSlug' => ['required'],
+                'date' => ['required', 'date_format:Y-m-d'],
+                'attendees' => ['required', 'integer', 'min:1', 'max:'.($this->space->capacity ?? 1)],
+                'name' => ['required', 'string', 'max:120'],
+                'email' => ['required', 'email', 'max:190'],
+                'phone' => ['required', 'regex:/^\+[1-9]\d{7,14}$/'],
+                'company' => ['nullable', 'string', 'max:120'],
+                'notes' => ['nullable', 'string', 'max:1000'],
+                'privacy' => ['accepted'],
+            ], [
+                'phone.regex' => 'Revisa el número de celular y el código de país.',
+                'privacy.accepted' => 'Para reservar, marca la casilla de aceptación de la política de privacidad y las condiciones.',
+            ]);
+        } catch (ValidationException $e) {
+            $this->dispatch('booking-invalid');
+
+            throw $e;
+        }
 
         if ($this->selection === null) {
-            $this->addError('time', 'Elige un horario disponible.');
-
-            return null;
+            return $this->fail('time', 'Elige un horario disponible.');
         }
 
         $rateKey = 'booking:'.request()->ip();
 
         if (RateLimiter::tooManyAttempts($rateKey, 10)) {
-            $this->addError('form', 'Has hecho demasiadas reservas seguidas. Inténtalo más tarde o escríbenos por WhatsApp.');
-
-            return null;
+            return $this->fail('form', 'Has hecho demasiadas reservas seguidas. Inténtalo más tarde o escríbenos por WhatsApp.');
         }
 
         RateLimiter::hit($rateKey, 3600);
@@ -171,14 +174,24 @@ class BookingForm extends Component
             // Someone else took the slot meanwhile: refresh the options and explain.
             $this->refreshSchedule();
             $this->time = null;
-            $this->addError('time', $e->getMessage());
 
-            return null;
+            return $this->fail('time', $e->getMessage());
         }
 
         session()->flash('booked', true);
 
         return $this->redirectRoute('bookings.show', $booking->manage_token);
+    }
+
+    /**
+     * Show an error and tell the page to scroll to it.
+     */
+    private function fail(string $field, string $message): null
+    {
+        $this->addError($field, $message);
+        $this->dispatch('booking-invalid');
+
+        return null;
     }
 
     /**

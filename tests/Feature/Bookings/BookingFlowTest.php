@@ -103,7 +103,9 @@ class BookingFlowTest extends TestCase
             ->set('email', 'no-es-correo')
             ->set('phone', '123')
             ->call('book')
-            ->assertHasErrors(['name' => 'required', 'email' => 'email', 'phone' => 'regex', 'privacy' => 'accepted']);
+            ->assertHasErrors(['name' => 'required', 'email' => 'email', 'phone' => 'regex', 'privacy' => 'accepted'])
+            ->assertDispatched('booking-invalid')
+            ->assertSee('(Obligatorio)');
 
         $this->assertSame(0, Booking::count());
     }

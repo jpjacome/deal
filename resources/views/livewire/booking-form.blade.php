@@ -81,19 +81,22 @@
                     <label>Sitio web <input type="text" wire:model="website" tabindex="-1" autocomplete="off"></label>
                 </div>
 
-                <label class="check">
-                    <input type="checkbox" wire:model="whatsapp">
-                    <span>Quiero recibir la confirmación y recordatorios por WhatsApp. <span class="muted">(Opcional)</span></span>
-                </label>
-                <label class="check">
-                    <input type="checkbox" wire:model="privacy">
-                    <span>Acepto la <a href="{{ route('privacy') }}" target="_blank">política de privacidad</a> y las <a href="{{ route('terms') }}" target="_blank">condiciones de reserva</a>.</span>
-                </label>
-                <label class="check">
-                    <input type="checkbox" x-model="remember">
-                    <span class="muted">Recordar mis datos en este dispositivo.</span>
-                </label>
-                @error('privacy') <p class="error">{{ $message }}</p> @enderror
+                <div class="checks">
+                    <label @class(['check', 'has-error' => $errors->has('privacy')])>
+                        <input type="checkbox" wire:model="privacy" aria-required="true" @if ($errors->has('privacy')) aria-invalid="true" aria-describedby="privacy-error" @endif>
+                        <span>Acepto la <a href="{{ route('privacy') }}" target="_blank">política de privacidad</a> y las <a href="{{ route('terms') }}" target="_blank">condiciones de reserva</a>. <span class="required">(Obligatorio)</span></span>
+                    </label>
+                    @error('privacy') <p class="error check-error" id="privacy-error">{{ $message }}</p> @enderror
+
+                    <label class="check">
+                        <input type="checkbox" wire:model="whatsapp">
+                        <span>Quiero recibir la confirmación y recordatorios por WhatsApp. <span class="muted">(Opcional)</span></span>
+                    </label>
+                    <label class="check">
+                        <input type="checkbox" x-model="remember">
+                        <span class="muted">Recordar mis datos en este dispositivo.</span>
+                    </label>
+                </div>
                 @error('form') <p class="error">{{ $message }}</p> @enderror
 
                 <ul class="policy muted">

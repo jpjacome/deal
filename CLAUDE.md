@@ -1,6 +1,6 @@
 # Deal — coworking website + reservations
 
-Spec: see `PLAN.md` (scope, data model, booking rules, notifications, delivery plan).
+Platform context (what is built, flows, architecture, settings, pending items): **`PLATFORM.md`** — read it first and keep it updated when features change. Original spec: `PLAN.md` (partly superseded).
 
 - Public site in **Spanish**; app timezone `America/Guayaquil`.
 - **No Tailwind or CSS frameworks.** One stylesheet for the public site: `resources/css/app.css` — 5 color vars taken only from the brand moodboard (`--accent` orange, `--primary` dark red, `--light` cream, `--surface` gray, `--white`), plus `--gradient` (orange → dark red, `in oklch`), one `--radius`, two font vars (Outfit headings, Inter body). **No black anywhere**: text is dark red. Write plain CSS using those variables; derive tints with `color-mix()`, never add colors. Building blocks: `.tile`, `.tile-dark`, `.gradient`, `.bento` + `.span-*`, `.supergraphic` (cropped wordmark), `.eyebrow`, `.bubble`, `.chip`.
